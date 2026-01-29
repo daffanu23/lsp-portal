@@ -1,19 +1,19 @@
-'use client'; // Client Component karena butuh interaksi/fetch di browser
+'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation'; // Hook buat ambil ID dari URL
-import { supabase } from '@/lib/supabaseClient'; // Pastikan path ini benar (sesuaikan dengan lokasi lib kamu)
+import { useParams } from 'next/navigation'; 
+import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
-import Navbar from '@/components/Navbar'; // Kita pasang Navbar juga biar konsisten
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer'; // <--- 1. Import Footer
 
 export default function NewsDetail() {
-  const params = useParams(); // 1. Ambil ID dari URL (folder [id])
+  const params = useParams(); 
   const { id } = params; 
 
   const [news, setNews] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 2. Fetch Data Spesifik saat ID berubah
   useEffect(() => {
     async function getNewsDetail() {
       if (!id) return;
@@ -21,8 +21,8 @@ export default function NewsDetail() {
       const { data, error } = await supabase
         .from('tbl_m_news')
         .select('*')
-        .eq('id_news', id) // Filter: Ambil yang ID-nya sama dengan URL
-        .single(); // Ambil 1 baris saja
+        .eq('id_news', id)
+        .single(); 
 
       if (error) {
         console.error("Gagal ambil berita:", error);
@@ -35,33 +35,39 @@ export default function NewsDetail() {
     getNewsDetail();
   }, [id]);
 
-  // --- TAMPILAN ---
-
-  // Jika masih loading...
+  // --- TAMPILAN LOADING ---
   if (loading) {
     return (
-      <div className="container" style={{ textAlign:'center', marginTop:'100px' }}>
-        <p>Sedang memuat berita...</p>
+      <div style={{ display:'flex', flexDirection:'column', minHeight:'100vh' }}>
+        <Navbar />
+        <div className="container" style={{ textAlign:'center', marginTop:'100px', flex:1 }}>
+          <p>Sedang memuat berita...</p>
+        </div>
+        <Footer />
       </div>
     );
   }
 
-  // Jika data tidak ditemukan...
+  // --- TAMPILAN 404 ---
   if (!news) {
     return (
-      <div className="container" style={{ textAlign:'center', marginTop:'100px' }}>
-        <h1>404 - Berita Tidak Ditemukan</h1>
-        <Link href="/" style={{ color:'blue' }}>&larr; Kembali ke Home</Link>
+      <div style={{ display:'flex', flexDirection:'column', minHeight:'100vh' }}>
+        <Navbar />
+        <div className="container" style={{ textAlign:'center', marginTop:'100px', flex:1 }}>
+          <h1>404 - Berita Tidak Ditemukan</h1>
+          <Link href="/" style={{ color:'var(--primary)' }}>&larr; Kembali ke Home</Link>
+        </div>
+        <Footer />
       </div>
     );
   }
 
-  // Jika data ada, tampilkan layout Detail (Style "article-container" dari globals.css)
+  // --- TAMPILAN UTAMA ---
   return (
-    <main>
+    <main style={{ display:'flex', flexDirection:'column', minHeight:'100vh' }}>
       <Navbar />
       
-      <article className="article-container">
+      <article className="article-container" style={{ flex: 1 }}> 
         {/* 1. Judul */}
         <h1 className="article-title">{news.tbl_title}</h1>
 
@@ -77,7 +83,6 @@ export default function NewsDetail() {
             </span>
           </div>
           
-          {/* Tombol Share Sederhana */}
           <div className="meta-right">
             <button 
                 onClick={() => {
@@ -111,10 +116,8 @@ export default function NewsDetail() {
         </div>
       </article>
 
-      {/* Footer Sementara */}
-      <footer style={{ background: '#1a252f', color: '#ccc', padding: '60px 0 30px', marginTop: '50px', textAlign:'center' }}>
-        <p>&copy; 2026 LSP Teknologi Digital</p>
-      </footer>
+      {/* 2. Panggil Footer di sini */}
+      <Footer />
     </main>
   );
 }
