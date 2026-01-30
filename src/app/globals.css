@@ -465,3 +465,10 @@ body.dark-mode textarea {
     color: #e0e0e0;
     border: 1px solid #444;
 }
+
+@media (max-width: 768px) {
+    /* Saat di HP, ubah grid jadi 1 kolom */
+    .detail-grid {
+        grid-template-columns: 1fr !important; 
+    }
+}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import Link from 'next/link';
 
 export default function EventList() {
   const [events, setEvents] = useState([]); 
@@ -30,7 +31,7 @@ export default function EventList() {
       <div className="container">
         <div className="section-header">
           <h2>Event Terdekat</h2>
-          <a href="#" className="view-all">Lihat Semua Event &rarr;</a>
+          <Link href="/search" className="view-all">Lihat Semua Event &rarr;</Link>
         </div>
 
         <div id="event-container" className="grid-4">
@@ -38,7 +39,7 @@ export default function EventList() {
           {!loading && events.length === 0 && <p>Tidak ada event mendatang.</p>}
 
           {events.map((item) => (
-            <div className="card" key={item.id}>
+            <div className="card" key={item.id_event}>
               <div className="card-body">
                 {/* Kode Event */}
                 <span style={{
@@ -57,10 +58,10 @@ export default function EventList() {
                    {item.alamat}
                 </p>
                 <p style={{ fontSize:'13px', color:'#d32f2f', fontWeight:'600' }}>
-                   {item.tanggal_mulai}
+                   {new Date(item.tanggal_mulai).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </p>
                 
-                {/* 2 TOMBOL SEJAJAR */}
+                {/* --- 2 TOMBOL (Fix Hover) --- */}
                 <div className="btn-group" style={{ display:'flex', gap:'10px', marginTop:'auto', paddingTop:'20px' }}>
                   
                   {/* Tombol Daftar (Biru) */}
@@ -68,18 +69,31 @@ export default function EventList() {
                     href={`https://wa.me/6281234567890?text=Halo+Admin,+saya+tertarik+event+${encodeURIComponent(item.nama_event)}`}
                     target="_blank"
                     className="btn-fill"
-                    style={{ textDecoration:'none', transition: '0.3s' }} // Tambah transisi
+                    style={{ textDecoration:'none', transition: '0.3s', flex: 1 }}
                   >
                     Daftar Sekarang
                   </a>
 
-                  {/* Tombol Skema (Putih) - Style background dihapus biar CSS jalan */}
-                  <button 
+                  {/* Tombol Lihat Skema (Putih) */}
+                  <Link 
+                    href={`/event/${item.id_event}`} 
                     className="btn-outline"
-                    onClick={() => alert('Fitur Skema Coming Soon!')}
+                    style={{ 
+                        flex:1, 
+                        padding:'10px', 
+                        borderRadius:'8px', 
+                        fontSize:'13px', 
+                        fontWeight:'500', 
+                        // background:'transparent', <-- SUDAH SAYA HAPUS!
+                        textAlign: 'center', 
+                        textDecoration: 'none',
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center'
+                    }}
                   >
                     Lihat Skema
-                  </button>
+                  </Link>
                 </div>
 
               </div>

@@ -98,7 +98,9 @@ export default function AdminDashboard() {
         
         <nav className="admin-menu" style={{ flex: 1 }}>
             <Link href="/admin" className="active">Dashboard Berita</Link>
-            <Link href="#">Manajemen Event</Link>
+            <Link href="/admin/event" className={router.pathname == '/admin/event' ? 'active' : ''}>
+                Manajemen Event
+            </Link>
         </nav>
         
         <div style={{ marginTop: 'auto' }}>
