@@ -1,98 +1,44 @@
 'use client';
-
-import { useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/context/AuthContext';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import Navbar from '@/components/Navbar';
 
 export default function LoginPage() {
+  const { user, loginWithGoogle } = useAuth();
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrorMsg('');
-
-    // Fungsi Login Bawaan Supabase
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
-
-    if (error) {
-      setErrorMsg('Login gagal! Email atau password salah.');
-      setLoading(false);
-    } else {
-      // Jika sukses, lempar ke halaman admin
-      router.push('/admin'); 
-    }
-  };
+  // Kalau sudah login, tendang ke home
+  useEffect(() => {
+    if (user) router.push('/');
+  }, [user, router]);
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      height: '100vh', 
-      backgroundColor: '#f4f7f6' 
-    }}>
-      <div className="card" style={{ width: '100%', maxWidth: '400px', padding: '20px' }}>
-        <div className="card-body">
-          <h2 style={{ textAlign: 'center', marginBottom: '20px', color: 'var(--primary)' }}>
-            Admin Login 🔒
-          </h2>
+    <div style={{ height: '100vh', display: 'flex', flexDirection:'column', background: '#f4f4f4' }}>
+      <Navbar />
+      <div style={{ flex:1, display:'flex', justifyContent:'center', alignItems:'center' }}>
           
-          <form onSubmit={handleLogin}>
-            <div className="form-group" style={{ marginBottom: '15px' }}>
-              <label>Email</label>
-              <input 
-                type="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@kampus.id"
-                required
-                style={{ width: '100%', padding: '12px', border: '1px solid #ddd', borderRadius: '8px' }}
-              />
-            </div>
-
-            <div className="form-group" style={{ marginBottom: '20px' }}>
-              <label>Password</label>
-              <input 
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="********"
-                required
-                style={{ width: '100%', padding: '12px', border: '1px solid #ddd', borderRadius: '8px' }}
-              />
-            </div>
-
-            {errorMsg && (
-              <p style={{ color: 'red', fontSize: '14px', textAlign: 'center', marginBottom: '15px' }}>
-                {errorMsg}
-              </p>
-            )}
-
+          <div style={{ background: 'white', padding: '50px', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', textAlign: 'center', maxWidth:'400px', width:'100%' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '10px' }}>Selamat Datang</h1>
+            <p style={{ color:'#666', marginBottom:'30px' }}>Masuk untuk mendaftar sertifikasi atau mengelola sistem.</p>
+            
             <button 
-              type="submit" 
-              className="btn-fill" 
-              disabled={loading}
-              style={{ width: '100%', padding: '12px', fontSize: '16px' }}
+                onClick={loginWithGoogle}
+                style={{ 
+                    display:'flex', alignItems:'center', justifyContent:'center', gap:'10px',
+                    width: '100%', padding: '15px', background: 'white', color: '#333', 
+                    border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer', fontSize:'16px', fontWeight:'600',
+                    transition:'0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.background = '#f9f9f9'}
+                onMouseOut={(e) => e.currentTarget.style.background = 'white'}
             >
-              {loading ? 'Memproses...' : 'Masuk Dashboard'}
+                {/* Logo Google SVG */}
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="G" style={{ width:'20px' }} />
+                Masuk dengan Google
             </button>
-          </form>
-
-          <div style={{ textAlign: 'center', marginTop: '20px' }}>
-            <Link href="/" style={{ fontSize: '14px', color: 'gray' }}>
-              &larr; Kembali ke Website
-            </Link>
           </div>
-        </div>
+
       </div>
     </div>
   );

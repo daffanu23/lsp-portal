@@ -1,85 +1,80 @@
-'use client'; // WAJIB: Agar fitur klik & state berfungsi
-
+'use client';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext'; // Panggil Context
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { user, role, logout } = useAuth(); // Ambil data user & role
+  const [isPastHero, setIsPastHero] = useState(false);
+  const pathname = usePathname();
+  const isHomePage = pathname === '/';
 
-  // 1. Cek Memory (LocalStorage) saat pertama kali loading
+  // ... (Kode scroll effect TETAP SAMA seperti sebelumnya, copy paste saja bagian useEffect scrollnya) ...
   useEffect(() => {
-    // Cek apakah user pernah pilih dark mode sebelumnya
-    const savedTheme = localStorage.getItem('theme');
-    
-    if (savedTheme === 'dark') {
-      setIsDarkMode(true);
-      document.body.classList.add('dark-mode');
-    }
-  }, []);
+    const handleScroll = () => {
+      if (isHomePage) {
+        const threshold = window.innerHeight - 100;
+        setIsPastHero(window.scrollY > threshold);
+      } else {
+        setIsPastHero(true);
+      }
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isHomePage]);
 
-  // 2. Fungsi Tombol Switch
-  const toggleTheme = () => {
-    if (isDarkMode) {
-      // Pindah ke LIGHT
-      document.body.classList.remove('dark-mode');
-      localStorage.setItem('theme', 'light'); // Simpan pilihan
-      setIsDarkMode(false);
-    } else {
-      // Pindah ke DARK
-      document.body.classList.add('dark-mode');
-      localStorage.setItem('theme', 'dark'); // Simpan pilihan
-      setIsDarkMode(true);
-    }
-  };
+  const navBackground = (isHomePage && !isPastHero) ? 'transparent' : 'white';
+  const navTextColor = (isHomePage && !isPastHero) ? 'white' : 'black';
 
   return (
-    <header>
-      <div className="container header-content">
-        {/* Logo Area */}
-        <div className="logo-area">
-          <Link href="/">
-            <img 
-              src="https://placehold.co/150x50/0088cc/white?text=LOGO+LSP" 
-              alt="Logo LSP" 
-              className="logo-img" 
-            />
-          </Link>
-        </div>
+    <nav style={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 100, padding: '20px 0', background: navBackground, transition: '0.4s', boxShadow: (isHomePage && !isPastHero) ? 'none' : '0 2px 10px rgba(0,0,0,0.05)' }}>
+      <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        
+        <Link href="/" style={{ color: navTextColor, fontSize: '24px', fontWeight: '900', textDecoration:'none' }}>UNI</Link>
 
-        {/* Navigasi */}
-        <nav>
-          <ul className="nav-links">
-            <li><Link href="/">Home</Link></li>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             
-            <li className="dropdown">
-              <a href="#" className="dropbtn">Layanan ▾</a>
-              <div className="dropdown-content">
-                <a href="#">Skema Sertifikasi</a>
-                <a href="#">Jadwal Asesmen</a>
-              </div>
-            </li>
+            {/* LOGIKA TAMPILAN BUTTON */}
             
-            <li>
-                <Link href="/testimoni/form" style={{ fontSize:'13px', color:'gray' }}>
-                    Isi Testimoni
+            {!user ? (
+                // 1. BELUM LOGIN
+                <Link href="/login" style={{ padding:'8px 20px', background:'black', color:'white', borderRadius:'30px', textDecoration:'none', fontSize:'14px', fontWeight:'600' }}>
+                    Login
                 </Link>
-            </li>
+            ) : (
+                // 2. SUDAH LOGIN
+                <div style={{ display:'flex', gap:'20px', alignItems:'center' }}>
+                    
+                    {/* MENU KHUSUS ADMIN */}
+                    {role === 'admin' && (
+                        <Link href="/admin" style={{ color: navTextColor, textDecoration:'none', fontSize:'14px', fontWeight:'600' }}>
+                            Dashboard Admin
+                        </Link>
+                    )}
 
-            <li><Link href="/login" className="btn-login">Login</Link></li>
-            
-            {/* Tombol Dark Mode yang SUDAH BERFUNGSI */}
-            <li>
-                <button 
-                    className="theme-toggle" 
-                    onClick={toggleTheme}
-                    aria-label="Toggle Dark Mode"
-                >
-                    {isDarkMode ? '☀️' : '🌙'} 
-                </button>
-            </li>
-          </ul>
-        </nav>
+                    {/* MENU KHUSUS USER BIASA */}
+                    {role === 'user' && (
+                         <Link href="/profile" style={{ color: navTextColor, textDecoration:'none', fontSize:'14px', fontWeight:'600' }}>
+                            Profile Saya
+                        </Link>
+                    )}
+
+                    {/* TOMBOL LOGOUT */}
+                    <button onClick={logout} style={{ background:'transparent', border:'1px solid red', color:'red', padding:'6px 15px', borderRadius:'20px', cursor:'pointer', fontSize:'12px' }}>
+                        Logout
+                    </button>
+                    
+                    {/* Avatar Kecil (Opsional) */}
+                    {user.user_metadata?.avatar_url && (
+                        <img src={user.user_metadata.avatar_url} style={{ width:'30px', borderRadius:'50%' }} />
+                    )}
+                </div>
+            )}
+
+        </div>
       </div>
-    </header>
+    </nav>
   );
 }

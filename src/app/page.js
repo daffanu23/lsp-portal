@@ -2,19 +2,17 @@ import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import EventList from '@/components/EventList';
 import NewsList from '@/components/NewsList';
-import TestimoniList from '@/components/TestimoniList'; // <--- Baru
-import Footer from '@/components/Footer';               // <--- Baru
+import TestimonialList from '@/components/TestimonialList';
+import Footer from '@/components/Footer';
 
 export default function Home() {
   return (
     <main>
       <Navbar />
-      
       <Hero />
       <EventList />
       <NewsList />
-      <TestimoniList />
-      
+      <TestimonialList />
       <Footer />
     </main>
   );

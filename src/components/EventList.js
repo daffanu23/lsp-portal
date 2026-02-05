@@ -1,105 +1,138 @@
 'use client'; 
-
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import Link from 'next/link';
 
 export default function EventList() {
-  const [events, setEvents] = useState([]); 
+  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    async function fetchEvents() {
+      // Ambil 8 event terdekat untuk homepage
+      const { data } = await supabase
+        .from('tbl_m_event')
+        .select('*')
+        .order('tanggal_mulai', { ascending: true })
+        .limit(4);
+      
+      setEvents(data || []);
+      setLoading(false);
+    }
     fetchEvents();
   }, []);
 
-  async function fetchEvents() {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('tbl_m_event')
-      .select('*')
-      .order('tanggal_mulai', { ascending: true }) 
-      .limit(4);
-
-    if (error) console.error(error);
-    else setEvents(data);
-    
-    setLoading(false);
-  }
+  // Logika Badge
+  const isComingSoon = (dateStr) => {
+    return new Date(dateStr) > new Date();
+  };
 
   return (
-    <section className="section-light">
+    // Background Putih Abu agar kontras dengan kartu hitam
+    <section style={{ padding: '80px 0', background: '#f5f5f5' }}>
       <div className="container">
-        <div className="section-header">
-          <h2>Event Terdekat</h2>
-          <Link href="/search" className="view-all">Lihat Semua Event &rarr;</Link>
-        </div>
+        
+        {/* JUDUL SECTION */}
+        <h2 style={{ 
+            textAlign: 'center', marginBottom: '50px', 
+            fontWeight: '800', fontSize: '1.8rem', color:'#111', 
+            textTransform:'uppercase', letterSpacing:'1px' 
+        }}>
+            Daftar Skema Sertifikasi
+        </h2>
 
-        <div id="event-container" className="grid-4">
-          {loading && <p className="loading">Sedang memuat jadwal...</p>}
-          {!loading && events.length === 0 && <p>Tidak ada event mendatang.</p>}
-
-          {events.map((item) => (
-            <div className="card" key={item.id_event}>
-              <div className="card-body">
-                {/* Kode Event */}
-                <span style={{
-                  background:'#e0f2fe', color:'#0284c7', padding:'4px 10px', 
-                  borderRadius:'4px', fontSize:'11px', alignSelf:'start', 
-                  fontWeight:'600', marginBottom:'12px', display:'inline-block'
+        {loading ? <p style={{textAlign:'center'}}>Memuat jadwal...</p> : (
+            
+            // GRID SYSTEM (Sesuai Request: 250px)
+            <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', 
+                gap: '20px' 
+            }}>
+            
+            {events.map((item) => (
+                <div key={item.id_event} style={{ 
+                    background: '#1e1e1e', // Dark Background
+                    borderRadius: '5px',   // Request: 5px
+                    padding: '25px', 
+                    color: 'white', 
+                    position:'relative', 
+                    minHeight:'380px', 
+                    display:'flex', flexDirection:'column', justifyContent:'space-between',
+                    boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
                 }}>
-                  {item.code_event}
-                </span>
-
-                <h3 style={{ fontSize:'18px', margin:'0 0 10px', fontWeight:'600' }}>
-                    {item.nama_event}
-                </h3>
                 
-                <p style={{ fontSize:'13px', marginBottom:'4px', color:'#666', fontWeight:'500' }}>
-                   {item.alamat}
-                </p>
-                <p style={{ fontSize:'13px', color:'#d32f2f', fontWeight:'600' }}>
-                   {new Date(item.tanggal_mulai).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                </p>
-                
-                {/* --- 2 TOMBOL (Fix Hover) --- */}
-                <div className="btn-group" style={{ display:'flex', gap:'10px', marginTop:'auto', paddingTop:'20px' }}>
-                  
-                  {/* Tombol Daftar (Biru) */}
-                  <a 
-                    href={`https://wa.me/6281234567890?text=Halo+Admin,+saya+tertarik+event+${encodeURIComponent(item.nama_event)}`}
-                    target="_blank"
-                    className="btn-fill"
-                    style={{ textDecoration:'none', transition: '0.3s', flex: 1 }}
-                  >
-                    Daftar Sekarang
-                  </a>
+                {/* BADGE "Coming Soon" (Top Center) */}
+                {isComingSoon(item.tanggal_mulai) && (
+                    <div style={{ 
+                        position:'absolute', top:'0', left:'50%', transform:'translateX(-50%)',
+                        background:'#d1d5db', // Abu terang
+                        color:'#111', 
+                        padding:'5px 20px', 
+                        borderBottomLeftRadius:'5px', borderBottomRightRadius:'5px',
+                        fontSize:'12px', fontWeight:'700'
+                    }}>
+                        Coming Soon
+                    </div>
+                )}
 
-                  {/* Tombol Lihat Skema (Putih) */}
-                  <Link 
-                    href={`/event/${item.id_event}`} 
-                    className="btn-outline"
-                    style={{ 
-                        flex:1, 
-                        padding:'10px', 
-                        borderRadius:'8px', 
-                        fontSize:'13px', 
-                        fontWeight:'500', 
-                        // background:'transparent', <-- SUDAH SAYA HAPUS!
-                        textAlign: 'center', 
-                        textDecoration: 'none',
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center'
-                    }}
-                  >
-                    Lihat Skema
-                  </Link>
+                {/* AREA KONTEN ATAS */}
+                <div style={{ marginTop: '30px' }}>
+                    
+                    {/* Kode Event (Kiri Atas) */}
+                    <p style={{ fontSize: '12px', color: '#aaa', marginBottom: '5px' }}>
+                        {item.code_event || '0101'}
+                    </p>
+                    
+                    {/* Judul Event */}
+                    <h3 style={{ fontSize: '22px', fontWeight: '700', lineHeight: '1.2', marginBottom: '25px' }}>
+                        {item.nama_event}
+                    </h3>
+                    
+                    {/* Lokasi & Tanggal */}
+                    <div style={{ marginBottom:'10px' }}>
+                        <p style={{ fontSize: '15px', fontWeight:'600', margin:0 }}>
+                            {item.alamat}
+                        </p>
+                        <p style={{ fontSize: '12px', color: '#ccc', margin:0 }}>
+                            {new Date(item.tanggal_mulai).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'})}
+                        </p>
+                    </div>
                 </div>
 
-              </div>
+                {/* AREA BAWAH (Garis & Tombol) */}
+                <div>
+                    {/* Garis Horizontal */}
+                    <div style={{ height:'1px', background:'white', width:'100%', marginBottom:'20px', opacity:0.8 }}></div>
+
+                    {/* Tombol Action */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        
+                        {/* Tombol LIHAT (Text Only) */}
+                        <Link href={`/event/${item.id_event}`} style={{ 
+                            color: 'white', textDecoration: 'none', fontWeight: '600', fontSize: '14px',
+                            cursor: 'pointer'
+                        }}>
+                            Lihat
+                        </Link>
+
+                        {/* Tombol DAFTAR (Box) */}
+                        <a href={`https://wa.me/6281234567890?text=Daftar+${encodeURIComponent(item.nama_event)}`} target="_blank" style={{ 
+                            background: '#d1d5db', 
+                            color: '#111', 
+                            padding: '8px 25px', 
+                            borderRadius: '5px', // Request: 5px
+                            textAlign: 'center', textDecoration: 'none', fontSize: '14px', fontWeight:'700' 
+                        }}>
+                            Daftar
+                        </a>
+                    </div>
+                </div>
+
+                </div>
+            ))}
             </div>
-          ))}
-        </div>
+        )}
       </div>
     </section>
   );

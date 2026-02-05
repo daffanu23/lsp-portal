@@ -23,7 +23,6 @@ function SearchContent() {
       
       let query = supabase.from('tbl_m_event').select('*');
 
-      // Filter Logic (Case Insensitive)
       if (filterNama) query = query.ilike('nama_event', `%${filterNama}%`); 
       if (filterLokasi) query = query.ilike('alamat', `%${filterLokasi}%`);
       if (filterTanggal) query = query.eq('tanggal_mulai', filterTanggal);
@@ -33,7 +32,7 @@ function SearchContent() {
       if (error) {
         console.error(error);
       } else {
-        setResults(data);
+        setResults(data || []);
       }
       setLoading(false);
     }
@@ -41,108 +40,141 @@ function SearchContent() {
     fetchSearchResults();
   }, [filterNama, filterLokasi, filterTanggal]);
 
-  return (
-    // CONTAINER UTAMA: Dipaksa rata kiri (textAlign: left) dan lebar full
-    <div className="container" style={{ 
-        marginTop: '50px', 
-        marginBottom: '100px', 
-        flex: 1, 
-        width: '100%', 
-        maxWidth: '1200px', 
-        textAlign: 'left',   // <-- PAKSA RATA KIRI
-        alignSelf: 'center'  // <-- Agar container tetap di tengah layar
-    }}>
-      
-      <h2 style={{ marginBottom: '20px', textAlign: 'left' }}>
-        Hasil Pencarian: {results.length} Event Ditemukan
-      </h2>
-      
-      <Link href="/" style={{ color: 'var(--primary)', textDecoration: 'underline', marginBottom: '30px', display: 'inline-block' }}>
-        &larr; Kembali / Reset Pencarian
-      </Link>
+  // Fungsi cek apakah tanggal > hari ini (untuk badge)
+  const isComingSoon = (dateStr) => new Date(dateStr) > new Date();
 
-      {/* GRID SYSTEM: Dipaksa Grid 4 Kolom */}
+  return (
+    // Background Halaman Putih Abu (Sesuai area "Daftar Skema" di Home-Page.jpg)
+    <div style={{ background: '#f4f4f4', minHeight: '100vh', paddingBottom: '100px' }}>
+      
+      {/* HEADER HALAMAN (Simple White) */}
       <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', // Logika Grid 4 Responsif
-          gap: '25px',
-          width: '100%',
-          justifyContent: 'start' // Pastikan item mulai dari kiri
+          background: 'white', 
+          paddingTop: '120px', // Jarak dari navbar fixed
+          paddingBottom: '40px', 
+          marginBottom: '50px',
+          borderBottom: '1px solid #ddd',
+          textAlign: 'center'
       }}>
+        <div className="container">
+            <h1 style={{ fontSize: '32px', fontWeight: '800', color: '#111', margin: 0 }}>
+                Hasil Pencarian
+            </h1>
+            <p style={{ color: '#666', marginTop: '10px', fontSize: '14px' }}>
+                Menampilkan {results.length} skema sertifikasi yang tersedia
+            </p>
+        </div>
+      </div>
+
+      <div className="container">
         
-        {loading && <p>Sedang mencari...</p>}
-        
+        {/* Loading / Empty State */}
+        {loading && <p style={{textAlign:'center'}}>Sedang memuat data...</p>}
         {!loading && results.length === 0 && (
-          <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '50px', background: '#f9f9f9', borderRadius: '12px', color: 'gray' }}>
-            Tidak ada jadwal yang cocok dengan filter kamu.
-          </p>
+           <div style={{ textAlign:'center', padding:'50px', color:'#888' }}>
+              <img src="/material-symbols search.svg" alt="Empty" style={{ width:'40px', opacity:0.3, marginBottom:'10px' }} />
+              <p>Tidak ada jadwal yang cocok.</p>
+           </div>
         )}
 
-        {results.map((item) => (
-          <div className="card" key={item.id_event} style={{ display:'flex', flexDirection:'column' }}>
-            <div className="card-body" style={{ flex:1, display:'flex', flexDirection:'column' }}>
+        {/* GRID KARTU (Layout Grid Responsif) */}
+        <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', 
+            gap: '30px'
+        }}>
+          
+          {results.map((item) => (
+            <div key={item.id_event} style={{ 
+                background: '#1e1e1e', // Background Gelap
+                borderRadius: '5px',   // Radius sedikit (kotak tegas)
+                padding: '25px',
+                color: 'white', 
+                position: 'relative', 
+                minHeight: '380px', 
+                display: 'flex', 
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
+            }}>
               
-              {/* Kode Event */}
-              <span style={{
-                background:'#e0f2fe', color:'#0284c7', padding:'4px 10px', 
-                borderRadius:'4px', fontSize:'11px', alignSelf:'start', 
-                fontWeight:'600', marginBottom:'12px', display:'inline-block'
-              }}>
-                {item.code_event}
-              </span>
+              {/* BADGE "Coming Soon" (Posisi Tengah Atas) */}
+              {isComingSoon(item.tanggal_mulai) && (
+                  <div style={{ 
+                      position:'absolute', top:'0', left:'50%', transform:'translateX(-50%)',
+                      background:'#d1d5db', // Abu terang
+                      color:'#111', 
+                      padding:'5px 20px', 
+                      borderBottomLeftRadius:'8px', borderBottomRightRadius:'8px',
+                      fontSize:'12px', fontWeight:'700'
+                  }}>
+                      Coming Soon
+                  </div>
+              )}
 
-              {/* Judul Event */}
-              <h3 style={{ fontSize:'18px', margin:'0 0 10px', fontWeight:'600' }}>
-                  {item.nama_event}
-              </h3>
-              
-              {/* Lokasi */}
-              <p style={{ fontSize:'13px', marginBottom:'4px', color:'#666', fontWeight:'500' }}>
-                 {item.alamat}
-              </p>
-              {/* Tanggal */}
-              <p style={{ fontSize:'13px', color:'#d32f2f', fontWeight:'600' }}>
-                 {new Date(item.tanggal_mulai).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-              </p>
-              
-              {/* --- 2 TOMBOL (Fix Hover & Sejajar) --- */}
-              <div className="btn-group" style={{ display:'flex', gap:'10px', marginTop:'auto', paddingTop:'20px' }}>
-                
-                {/* Tombol Daftar (Biru) */}
-                <a 
-                  href={`https://wa.me/6281234567890?text=Halo+Admin,+saya+tertarik+event+${encodeURIComponent(item.nama_event)}`}
-                  target="_blank"
-                  className="btn-fill"
-                  style={{ textDecoration:'none', transition: '0.3s', flex: 1 }}
-                >
-                  Daftar Sekarang
-                </a>
+              {/* BAGIAN ATAS KARTU */}
+              <div style={{ marginTop: '30px' }}> {/* Margin top agar tidak nabrak badge */}
+                  
+                  {/* Kode Event (Kiri Atas) */}
+                  <div style={{ fontSize:'12px', color:'#aaa', marginBottom:'5px' }}>
+                      {item.code_event || '0101'}
+                  </div>
 
-                {/* Tombol Lihat Skema (Putih) */}
-                <Link 
-                  href={`/event/${item.id_event}`} 
-                  className="btn-outline"
-                  style={{ 
-                    flex:1, 
-                    padding:'10px', 
-                    borderRadius:'8px', 
-                    fontSize:'13px', 
-                    fontWeight:'500', 
-                    // Background dihapus agar hover CSS jalan
-                    textAlign: 'center', 
-                    textDecoration: 'none',
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center'
-                  }}
-                >
-                  Lihat Skema
-                </Link>
+                  {/* Judul Event */}
+                  <h3 style={{ fontSize: '24px', fontWeight: '700', lineHeight: '1.2', marginBottom: '30px' }}>
+                      {item.nama_event}
+                  </h3>
+                  
+                  {/* Lokasi & Tanggal */}
+                  <div style={{ marginBottom:'10px' }}>
+                      <p style={{ fontSize: '16px', fontWeight:'600', margin:0 }}>
+                        {item.alamat}
+                      </p>
+                      <p style={{ fontSize: '13px', color: '#ccc', margin:0 }}>
+                        {new Date(item.tanggal_mulai).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'})}
+                      </p>
+                  </div>
               </div>
-              
+
+              {/* BAGIAN BAWAH KARTU */}
+              <div>
+                 {/* Garis Horizontal Putih */}
+                 <div style={{ height:'1px', background:'white', width:'100%', marginBottom:'20px', opacity:0.8 }}></div>
+
+                 {/* Tombol Action (Lihat & Daftar) */}
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    
+                    {/* Tombol LIHAT (Teks Saja) */}
+                    <Link href={`/event/${item.id_event}`} style={{ 
+                        color: 'white', textDecoration: 'none', fontWeight: '600', fontSize: '14px',
+                        cursor: 'pointer'
+                    }}>
+                        Lihat
+                    </Link>
+
+                    {/* Tombol DAFTAR (Kotak Putih/Abu) */}
+                    <a 
+                      href={`https://wa.me/6281234567890?text=Daftar+${encodeURIComponent(item.nama_event)}`}
+                      target="_blank"
+                      style={{ 
+                        background: '#d1d5db', // Warna tombol sesuai gambar (abu terang)
+                        color: '#111', 
+                        padding: '8px 25px', 
+                        borderRadius: '6px', 
+                        textDecoration: 'none', 
+                        fontWeight: '700', 
+                        fontSize: '14px' 
+                      }}
+                    >
+                        Daftar
+                    </a>
+
+                 </div>
+              </div>
+
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -150,9 +182,10 @@ function SearchContent() {
 
 export default function SearchPage() {
   return (
-    <main style={{ display:'flex', flexDirection:'column', minHeight:'100vh', width:'100%' }}>
+    <main>
       <Navbar />
-      <Suspense fallback={<div className="container" style={{ marginTop:'100px', textAlign:'center' }}>Loading Search...</div>}>
+      
+      <Suspense fallback={<div>Loading...</div>}>
         <SearchContent />
       </Suspense>
       <Footer />
