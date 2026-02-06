@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Trash2, PlusCircle } from 'lucide-react';
+import { Trash2, Plus, Calendar, Loader2 } from 'lucide-react';
 
 export default function AdminHistoryPage() {
   const [history, setHistory] = useState([]);
-  // HAPUS description dari state
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ year: '', month: '', title: '' });
 
   useEffect(() => {
@@ -14,9 +14,7 @@ export default function AdminHistoryPage() {
   }, []);
 
   async function fetchHistory() {
-    // LOGIKA SORTING BENAR:
-    // 1. Tahun Terbaru paling atas (Descending)
-    // 2. Bulan Terbesar (02) di atas Bulan Kecil (01) (Descending)
+    // Sorting: Tahun DESC, lalu Bulan DESC
     const { data } = await supabase
         .from('tbl_history')
         .select('*')
@@ -24,13 +22,13 @@ export default function AdminHistoryPage() {
         .order('month', { ascending: false }); 
         
     if(data) setHistory(data);
+    setLoading(false);
   }
 
   const handleAdd = async (e) => {
     e.preventDefault();
     if (!form.year || !form.title) return alert('Tahun dan Judul wajib diisi!');
 
-    // LOGIKA TAMBAH ANGKA 0 (Tetap dipakai)
     let formattedMonth = '';
     if (form.month) {
         formattedMonth = form.month.toString().padStart(2, '0');
@@ -40,7 +38,6 @@ export default function AdminHistoryPage() {
         year: form.year,
         title: form.title,
         month: formattedMonth 
-        // Description sudah dihapus
     };
 
     const { error } = await supabase.from('tbl_history').insert([dataToSubmit]);
@@ -48,16 +45,15 @@ export default function AdminHistoryPage() {
     if (!error) {
         setForm({ year: '', month: '', title: '' });
         fetchHistory();
-        alert('History berhasil ditambahkan!');
     } else {
         alert('Gagal: ' + error.message);
     }
   };
 
   const handleDelete = async (id) => {
-    if(!confirm('Hapus sejarah ini?')) return;
-    await supabase.from('tbl_history').delete().eq('id', id);
-    fetchHistory();
+    if(!confirm('Hapus history ini?')) return;
+    const { error } = await supabase.from('tbl_history').delete().eq('id', id);
+    if (!error) fetchHistory();
   };
 
   const handleNumberInput = (e, field) => {
@@ -66,82 +62,118 @@ export default function AdminHistoryPage() {
     setForm({ ...form, [field]: val });
   };
 
-  return (
-    <div style={{ padding: '40px', maxWidth:'900px' }}>
-      <h1 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '30px' }}>Kelola History</h1>
+  if (loading) return <div style={{ height:'80vh', display:'flex', justifyContent:'center', alignItems:'center', gap:'10px', color:'#666' }}><Loader2 className="animate-spin"/> Memuat History...</div>;
 
-      {/* Form Tambah */}
-      <div style={{ background:'white', padding:'25px', borderRadius:'12px', boxShadow:'0 5px 15px rgba(0,0,0,0.05)', marginBottom:'30px' }}>
-        <h3 style={{ fontSize:'16px', fontWeight:'bold', marginBottom:'15px' }}>Tambah History Baru</h3>
+  return (
+    // WRAPPER UTAMA (Padding Top Aman)
+    <div style={{ paddingTop: '80px', maxWidth: '1000px', margin: '0 auto' }}>
+      
+      {/* HEADER SECTION */}
+      <div style={{ marginBottom: '40px' }}>
+          <h1 style={{ fontSize: '42px', fontWeight: '900', margin: '0 0 10px 0', letterSpacing:'-1px', textTransform:'uppercase' }}>Kelola History</h1>
+          <p style={{ color: '#666', fontSize:'16px', fontWeight:'500' }}>Catat momen penting dan perjalanan organisasi.</p>
+      </div>
+
+      {/* FORM CARD */}
+      <div style={{ background:'white', padding:'30px', borderRadius:'20px', boxShadow:'0 5px 30px rgba(0,0,0,0.05)', marginBottom:'40px', border:'1px solid #eee' }}>
+        <h3 style={{ fontSize:'16px', fontWeight:'800', marginBottom:'20px', textTransform:'uppercase', display:'flex', alignItems:'center', gap:'10px' }}>
+            <div style={{ width:'24px', height:'24px', background:'black', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', color:'white' }}><Plus size={14}/></div>
+            Tambah History Baru
+        </h3>
         
-        <form onSubmit={handleAdd} style={{ display:'flex', gap:'15px', alignItems:'flex-end' }}>
+        <form onSubmit={handleAdd} style={{ display:'flex', gap:'20px', alignItems:'flex-end', flexWrap:'wrap' }}>
             
-            <div style={{width:'100px'}}>
-                <label style={labelStyle}>Tahun *</label>
+            {/* Input Tahun */}
+            <div style={{ width:'120px' }}>
+                <label style={labelStyle}>Tahun <span style={{color:'red'}}>*</span></label>
                 <input 
-                    type="text" maxLength="4" placeholder="2026" 
+                    type="text" maxLength="4" placeholder="YYYY" 
                     value={form.year} onChange={(e) => handleNumberInput(e, 'year')} 
                     style={inputStyle} 
                 />
             </div>
-            <div style={{width:'80px'}}>
-                <label style={labelStyle}>Bulan</label>
+
+            {/* Input Bulan */}
+            <div style={{ width:'100px' }}>
+                <label style={labelStyle}>Bulan (01-12)</label>
                 <input 
-                    type="text" maxLength="2" placeholder="02" 
+                    type="text" maxLength="2" placeholder="MM" 
                     value={form.month} onChange={(e) => handleNumberInput(e, 'month')} 
                     style={inputStyle} 
                 />
             </div>
-            <div style={{flex:1}}>
-                <label style={labelStyle}>Judul Kejadian *</label>
+
+            {/* Input Judul */}
+            <div style={{ flex:1, minWidth:'250px' }}>
+                <label style={labelStyle}>Judul Kejadian <span style={{color:'red'}}>*</span></label>
                 <input 
-                    type="text" placeholder="Contoh: Pendaftaran Batch 1" 
+                    type="text" placeholder="Contoh: Pendirian Kampus Baru" 
                     value={form.title} onChange={e=>setForm({...form, title:e.target.value})} 
                     style={inputStyle} 
                 />
             </div>
-            {/* Input Deskripsi SUDAH DIHAPUS */}
 
-            <button type="submit" style={{ padding:'10px 20px', background:'black', color:'white', borderRadius:'6px', border:'none', cursor:'pointer', fontWeight:'bold', display:'flex', alignItems:'center', gap:'5px', height:'42px' }}>
-                <PlusCircle size={18} /> Tambah
+            {/* Tombol Submit */}
+            <button type="submit" style={{ 
+                padding:'12px 25px', background:'black', color:'white', borderRadius:'8px', border:'none', 
+                cursor:'pointer', fontWeight:'bold', display:'flex', alignItems:'center', gap:'8px', height:'46px',
+                boxShadow:'0 4px 10px rgba(0,0,0,0.1)'
+            }}>
+                <Plus size={18} /> Simpan
             </button>
         </form>
       </div>
 
-      {/* Tabel List */}
-      <div style={{ background:'white', borderRadius:'12px', overflow:'hidden', boxShadow:'0 5px 15px rgba(0,0,0,0.05)' }}>
-        <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'14px' }}>
-            <thead style={{ background:'#f9fafb', borderBottom:'1px solid #eee' }}>
-                <tr>
-                    <th style={{padding:'15px', textAlign:'left'}}>Waktu</th>
-                    <th style={{padding:'15px', textAlign:'left'}}>Judul</th>
-                    <th style={{padding:'15px', textAlign:'center', width:'80px'}}>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                {history.map(item => (
-                    <tr key={item.id} style={{ borderBottom:'1px solid #f3f4f6' }}>
-                        <td style={{padding:'15px'}}>
-                            <div style={{fontWeight:'900', fontSize:'16px'}}>{item.year}</div>
-                            <div style={{fontSize:'13px', color:'#888', fontWeight:'bold'}}>
-                                {item.month ? item.month : '-'}
-                            </div>
-                        </td>
-                        <td style={{padding:'15px', fontWeight:'500', color:'#333', fontSize:'16px'}}>{item.title}</td>
-                        <td style={{padding:'15px', textAlign:'center'}}>
-                            <button onClick={() => handleDelete(item.id)} style={{ background:'none', border:'none', cursor:'pointer', color:'#ef4444' }}>
-                                <Trash2 size={18} />
-                            </button>
-                        </td>
+      {/* LIST CARD */}
+      <div style={{ background: 'white', borderRadius: '20px', boxShadow: '0 5px 30px rgba(0,0,0,0.05)', overflow: 'hidden', border:'1px solid #eee' }}>
+        {history.length === 0 ? (
+             <div style={{ padding: '60px', textAlign: 'center', color: '#888' }}>Belum ada data history.</div>
+        ) : (
+            <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'15px' }}>
+                <thead style={{ background:'#f8f8f8', borderBottom:'1px solid #eee' }}>
+                    <tr>
+                        <th style={{padding:'20px', textAlign:'center', width:'80px', color:'#888', fontSize:'12px'}}>THN</th>
+                        <th style={{padding:'20px', textAlign:'center', width:'60px', color:'#888', fontSize:'12px'}}>BLN</th>
+                        <th style={{padding:'20px', textAlign:'left', color:'#444', fontSize:'12px', letterSpacing:'1px'}}>JUDUL / PERISTIWA</th>
+                        <th style={{padding:'20px', textAlign:'center', width:'80px', color:'#444', fontSize:'12px'}}>AKSI</th>
                     </tr>
-                ))}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {history.map(item => (
+                        <tr key={item.id} style={{ borderBottom:'1px solid #f3f4f6' }}>
+                            {/* Tahun (Besar & Tebal) */}
+                            <td style={{ padding:'20px', textAlign:'center' }}>
+                                <div style={{ fontWeight:'900', fontSize:'20px', color:'black' }}>{item.year}</div>
+                            </td>
+                            
+                            {/* Bulan (Kecil & Abu) */}
+                            <td style={{ padding:'20px', textAlign:'center' }}>
+                                <div style={{ fontSize:'14px', fontWeight:'bold', color:'#999', background:'#eee', padding:'4px', borderRadius:'6px' }}>
+                                    {item.month ? item.month : '-'}
+                                </div>
+                            </td>
+
+                            {/* Judul */}
+                            <td style={{ padding:'20px', color:'#333', fontWeight:'500', fontSize:'16px' }}>
+                                {item.title}
+                            </td>
+
+                            {/* Hapus */}
+                            <td style={{ padding:'20px', textAlign:'center' }}>
+                                <button onClick={() => handleDelete(item.id)} style={{ padding:'8px', borderRadius:'8px', border:'none', background:'#fee2e2', cursor:'pointer', color:'#ef4444' }}>
+                                    <Trash2 size={18} />
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        )}
       </div>
 
     </div>
   );
 }
 
-const labelStyle = { display: 'block', marginBottom: '5px', fontSize: '12px', fontWeight: '600', color:'#666' };
-const inputStyle = { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' };
+const labelStyle = { display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: '700', color:'#444', textTransform:'uppercase', letterSpacing:'0.5px' };
+const inputStyle = { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px', background:'#f9f9f9', height:'46px' };
