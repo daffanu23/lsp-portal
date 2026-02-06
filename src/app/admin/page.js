@@ -101,6 +101,12 @@ export default function AdminDashboard() {
             <Link href="/admin/event" className={router.pathname == '/admin/event' ? 'active' : ''}>
                 Manajemen Event
             </Link>
+            <Link href="/admin/settings" className={router.pathname == '/admin/settings' ? 'active' : ''}>
+                Pengaturan Halaman
+            </Link>
+            <Link href="/admin/history" className={router.pathname == '/admin/history' ? 'active' : ''}>
+                Kelola History
+            </Link>
         </nav>
         
         <div style={{ marginTop: 'auto' }}>

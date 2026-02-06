@@ -35,30 +35,37 @@ export default function AddNewsPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!title || !content || !file) {
-      alert("Mohon lengkapi semua data.");
+    // PERUBAHAN 1: Hapus "!file" dari pengecekan agar gambar tidak wajib
+    if (!title || !content) {
+      alert("Mohon lengkapi Judul dan Isi Berita.");
       return;
     }
 
     setLoading(true);
 
     try {
-      // Upload
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      let finalImageUrl = null; // Default null jika tidak ada gambar
 
-      const { error: uploadError } = await supabase
-        .storage
-        .from('news_images')
-        .upload(filePath, file);
+      // PERUBAHAN 2: Bungkus logika upload dengan "if (file)"
+      if (file) {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}.${fileExt}`;
+          const filePath = `${fileName}`;
 
-      if (uploadError) throw uploadError;
+          const { error: uploadError } = await supabase
+            .storage
+            .from('news_images')
+            .upload(filePath, file);
 
-      const { data: urlData } = supabase
-        .storage
-        .from('news_images')
-        .getPublicUrl(filePath);
+          if (uploadError) throw uploadError;
+
+          const { data: urlData } = supabase
+            .storage
+            .from('news_images')
+            .getPublicUrl(filePath);
+            
+          finalImageUrl = urlData.publicUrl;
+      }
 
       // Insert DB
       const { error: insertError } = await supabase
@@ -66,7 +73,7 @@ export default function AddNewsPage() {
         .insert({
           tbl_title: title,
           tbl_text: content,
-          tbl_pict: urlData.publicUrl,
+          tbl_pict: finalImageUrl, // PERUBAHAN 3: Gunakan variabel ini (bisa url atau null)
           author: author,
           tgl_upload: new Date().toISOString()
         });
@@ -128,7 +135,7 @@ export default function AddNewsPage() {
                 </div>
 
                 <div className="form-group" style={{ marginBottom: '20px' }}>
-                    <label>Gambar Thumbnail</label>
+                    <label>Gambar Thumbnail (Opsional)</label>
                     <input 
                     type="file" 
                     accept="image/*"

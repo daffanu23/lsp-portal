@@ -1,80 +1,84 @@
 'use client';
 import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext'; // Panggil Context
-import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { useState } from 'react';
+import { Menu, X, LogOut, User } from 'lucide-react';
+import { usePathname } from 'next/navigation'; // <--- Tambah ini
 
 export default function Navbar() {
-  const { user, role, logout } = useAuth(); // Ambil data user & role
-  const [isPastHero, setIsPastHero] = useState(false);
-  const pathname = usePathname();
-  const isHomePage = pathname === '/';
+  const { user, role, logout } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname(); // <--- Ambil URL sekarang (misal: '/about')
 
-  // ... (Kode scroll effect TETAP SAMA seperti sebelumnya, copy paste saja bagian useEffect scrollnya) ...
-  useEffect(() => {
-    const handleScroll = () => {
-      if (isHomePage) {
-        const threshold = window.innerHeight - 100;
-        setIsPastHero(window.scrollY > threshold);
-      } else {
-        setIsPastHero(true);
-      }
+  // Helper function biar kodingan di bawah gak ribet
+  const getLinkStyle = (path) => {
+    const isActive = pathname === path;
+    return {
+      textDecoration: 'none',
+      color: 'black',
+      fontWeight: isActive ? '900' : 'normal', // Tebal kalau aktif
+      borderBottom: isActive ? '2px solid black' : 'none', // Garis bawah kalau aktif
+      paddingBottom: '2px',
+      transition: '0.3s'
     };
-    handleScroll();
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isHomePage]);
-
-  const navBackground = (isHomePage && !isPastHero) ? 'transparent' : 'white';
-  const navTextColor = (isHomePage && !isPastHero) ? 'white' : 'black';
+  };
 
   return (
-    <nav style={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 100, padding: '20px 0', background: navBackground, transition: '0.4s', boxShadow: (isHomePage && !isPastHero) ? 'none' : '0 2px 10px rgba(0,0,0,0.05)' }}>
-      <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        
-        <Link href="/" style={{ color: navTextColor, fontSize: '24px', fontWeight: '900', textDecoration:'none' }}>UNI</Link>
+    <>
+      <nav style={{ position: 'fixed', top: 0, width: '100%', padding: '20px 40px', background: 'white', zIndex: 100, display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: '0.3s' }}>
+        {/* LOGO */}
+        <Link href="/" style={{ fontSize: '32px', fontWeight: '900', color: 'black', textDecoration: 'none', letterSpacing: '-1px' }}>
+          UNI
+        </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            
-            {/* LOGIKA TAMPILAN BUTTON */}
-            
-            {!user ? (
-                // 1. BELUM LOGIN
-                <Link href="/login" style={{ padding:'8px 20px', background:'black', color:'white', borderRadius:'30px', textDecoration:'none', fontSize:'14px', fontWeight:'600' }}>
-                    Login
-                </Link>
-            ) : (
-                // 2. SUDAH LOGIN
-                <div style={{ display:'flex', gap:'20px', alignItems:'center' }}>
-                    
-                    {/* MENU KHUSUS ADMIN */}
-                    {role === 'admin' && (
-                        <Link href="/admin" style={{ color: navTextColor, textDecoration:'none', fontSize:'14px', fontWeight:'600' }}>
-                            Dashboard Admin
-                        </Link>
-                    )}
+          
+          {/* USER INFO */}
+          {!user ? (
+            <Link href="/login" style={{ fontSize: '14px', fontWeight: 'bold', textDecoration: 'none', color: 'black' }}>Login</Link>
+          ) : (
+            <div style={{ display: 'flex', gap: '15px', alignItems:'center' }}>
+                {role === 'admin' && (
+                    <Link href="/admin" style={{ fontSize:'12px', fontWeight:'bold', background:'black', color:'white', padding:'5px 10px', borderRadius:'4px', textDecoration:'none' }}>
+                        Dashboard
+                    </Link>
+                )}
+                <button onClick={logout} style={{background:'none', border:'none', cursor:'pointer', color:'red'}} title="Logout">
+                    <LogOut size={20}/>
+                </button>
+            </div>
+          )}
 
-                    {/* MENU KHUSUS USER BIASA */}
-                    {role === 'user' && (
-                         <Link href="/profile" style={{ color: navTextColor, textDecoration:'none', fontSize:'14px', fontWeight:'600' }}>
-                            Profile Saya
-                        </Link>
-                    )}
-
-                    {/* TOMBOL LOGOUT */}
-                    <button onClick={logout} style={{ background:'transparent', border:'1px solid red', color:'red', padding:'6px 15px', borderRadius:'20px', cursor:'pointer', fontSize:'12px' }}>
-                        Logout
-                    </button>
-                    
-                    {/* Avatar Kecil (Opsional) */}
-                    {user.user_metadata?.avatar_url && (
-                        <img src={user.user_metadata.avatar_url} style={{ width:'30px', borderRadius:'50%' }} />
-                    )}
-                </div>
-            )}
-
+          {/* HAMBURGER ICON */}
+          <button onClick={() => setIsOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+            <Menu size={32} color="black" strokeWidth={1.5} />
+          </button>
         </div>
+      </nav>
+
+      {/* FULLSCREEN MENU OVERLAY */}
+      {/* Kita kasih animasi dikit biar menunya juga smooth */}
+      <div style={{ 
+          position: 'fixed', top: 0, right: isOpen ? 0 : '-100%', width: '100%', height: '100vh', 
+          background: 'white', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '40px',
+          transition: 'right 0.5s cubic-bezier(0.77, 0, 0.175, 1)' // Animasi geser smooth
+      }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '32px', fontWeight: '900' }}>UNI</span>
+            <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+              <X size={32} color="black" />
+            </button>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '40px', fontSize: '32px' }}>
+            {/* Aplikasikan Style Aktif di sini */}
+            <Link href="/" onClick={() => setIsOpen(false)} style={getLinkStyle('/')}>Home</Link>
+            <Link href="/about" onClick={() => setIsOpen(false)} style={getLinkStyle('/about')}>About</Link>
+            <Link href="/history" onClick={() => setIsOpen(false)} style={getLinkStyle('/history')}>History</Link>
+            <Link href="/news" onClick={() => setIsOpen(false)} style={getLinkStyle('/news')}>News</Link>
+            <Link href="/contact" onClick={() => setIsOpen(false)} style={getLinkStyle('/contact')}>Contact</Link>
+          </div>
       </div>
-    </nav>
+    </>
   );
 }
