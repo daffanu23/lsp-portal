@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { 
   LayoutDashboard, Calendar, Settings, History, 
-  Mail, ShieldCheck, LogOut, Sun, Moon, User // <--- Tambah 'User' di sini
+  Mail, ShieldCheck, LogOut, Sun, Moon, User, Users // <--- Tambah 'User' di sini
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -112,6 +112,9 @@ export default function AdminSidebar() {
         </Link>
         <Link href="/admin/verifikasi" style={getLinkStyle('/admin/verifikasi')}>
             <ShieldCheck size={20} /> Verifikasi Akun
+        </Link>
+        <Link href="/admin/participants" style={getLinkStyle('/admin/participants')}>
+            <Users size={20} /> Data Peserta
         </Link>
       </nav>
 
