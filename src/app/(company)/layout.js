@@ -7,7 +7,7 @@ export default function CompanyLayout({ children }) {
       <CompanyHeader />
 
       {/* Children di bawah ini yang akan dibungkus Template & Beranimasi */}
-      <div className="container" style={{ paddingBottom: '80px', maxWidth:'900px', margin:'0 auto' }}>
+      <div className="container" style={{ paddingBottom: '80px', maxWidth:'1200px', margin:'0 auto' }}>
          {children}
       </div>
     </div>

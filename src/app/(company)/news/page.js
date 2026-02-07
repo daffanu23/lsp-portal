@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import Link from 'next/link'; // <--- TETAP ADA (PENTING!)
+import Link from 'next/link';
 
 export default function NewsPage() {
   const [news, setNews] = useState([]);
@@ -20,24 +20,26 @@ export default function NewsPage() {
   }
 
   return (
-    // Tidak perlu div container/background lagi.
-    // Langsung ke Grid Layout.
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+   <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', // KUNCI UTAMA DI SINI
+        gap: '20px',
+        padding: '40px', // Padding luar grid
+        maxWidth: '1400px', // Membatasi lebar maksimal agar rapi
+        margin: '0 auto' // Posisi tengah
+    }}>
         
         {news.map((item, index) => (
-            // Link ini WAJIB ADA agar bisa klik ke detail berita
             <Link 
                 href={`/news/${item.id_news}`} 
                 key={item.id_news}
                 style={{ textDecoration: 'none' }} 
             >
                 <div style={{ 
-                    // Logika Background: Gambar vs Warna Solid
                     background: item.tbl_pict 
                         ? `url(${item.tbl_pict}) center/cover no-repeat` 
                         : (item.is_pinned ? '#222' : 'white'),
                     
-                    // Logika Warna Teks
                     color: item.tbl_pict ? 'white' : (item.is_pinned ? 'white' : 'black'),
                     
                     padding: '30px', 
@@ -52,7 +54,7 @@ export default function NewsPage() {
                 onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
                 onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                 >
-                    {/* Overlay Gelap jika ada gambar */}
+                    {/* Overlay Gelap */}
                     {item.tbl_pict && (
                         <div style={{ 
                             position:'absolute', top:0, left:0, width:'100%', height:'100%', 
@@ -76,13 +78,13 @@ export default function NewsPage() {
                             {item.tbl_title}
                         </h2>
 
-                        {/* Footer (Tanggal & Index) */}
+                        {/* Footer */}
                         <div style={{ 
                             display: 'flex', justifyContent: 'space-between', fontSize: '12px', opacity: 0.7, 
                             borderTop: (item.tbl_pict || item.is_pinned) ? '1px solid rgba(255,255,255,0.3)' : '1px solid #eee', 
                             paddingTop: '15px' 
                         }}>
-                            <span>{item.tgl_upload}</span>
+                            <span>{new Date(item.tgl_upload).toLocaleDateString('id-ID')}</span>
                             <span>{(index + 1).toString().padStart(2, '0')}</span>
                         </div>
                     </div>

@@ -1,7 +1,8 @@
 'use client'; 
+
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import Link from 'next/link'; // <--- PENTING: Import Link
+import Link from 'next/link';
 
 export default function NewsList() {
   const [news, setNews] = useState([]);
@@ -22,71 +23,96 @@ export default function NewsList() {
     fetchNews();
   }, []);
 
-  // LOGIKA WAKTU (Custom)
-  const getTimeLabel = (dateStr) => {
-    const uploadDate = new Date(dateStr);
-    const now = new Date();
-    // Hitung selisih dalam jam
-    const diffHours = (now - uploadDate) / (1000 * 60 * 60); 
-
-    if (diffHours < 24) {
-        return "Baru diupload";
-    } else {
-        const diffDays = Math.floor(diffHours / 24);
-        return `${diffDays} hari yang lalu`;
-    }
-  };
-
   return (
-    <section style={{ padding: '80px 0', background: '#e5e5e5' }}>
+    <section style={{ padding: '80px 0', background: '#f8f8f8' }}>
       <div className="container">
         
+        {/* JUDUL SECTION */}
         <h2 style={{ 
             textAlign: 'center', marginBottom: '50px', 
             fontWeight: '800', fontSize: '1.8rem', color:'#111', 
             textTransform:'uppercase', letterSpacing:'1px' 
         }}>
-            Artikel
+            Artikel Terbaru
         </h2>
 
         {loading ? <p style={{textAlign:'center'}}>Memuat artikel...</p> : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '25px' }}>
             
-            {news.map((item) => (
-                // --- BUNGKUS DENGAN LINK AGAR BISA DIKLIK ---
+            // GRID SYSTEM
+            // Saya pakai minmax(280px) agar muat 4 kolom di layar laptop standar
+            <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', 
+                gap: '20px'
+            }}>
+            
+            {news.map((item, index) => (
                 <Link 
-                    href={`/news/${item.id_news}`} // Mengarah ke halaman detail berita
+                    href={`/news/${item.id_news}`} 
                     key={item.id_news}
-                    style={{ textDecoration: 'none', color: 'inherit' }} // Hilangkan garis bawah default
+                    style={{ textDecoration: 'none' }} 
                 >
-                    <div 
-                        style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'opacity 0.2s' }}
-                        onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'} // Efek hover dikit
-                        onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+                    <div style={{ 
+                        // --- STYLE DARI NEWS PAGE (PLEK KETIPLEK) ---
+                        background: item.tbl_pict 
+                            ? `url(${item.tbl_pict}) center/cover no-repeat` 
+                            : (item.is_pinned ? '#222' : 'white'),
+                        
+                        color: item.tbl_pict ? 'white' : (item.is_pinned ? 'white' : 'black'),
+                        
+                        padding: '30px', 
+                        aspectRatio: '1/1', // Kotak Sempurna
+                        display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                        boxShadow: '0 5px 15px rgba(0,0,0,0.05)',
+                        transition: 'transform 0.2s',
+                        cursor: 'pointer',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        borderRadius: '0' // Opsional: Tambah borderRadius:'12px' jika ingin tumpul
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                    onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                     >
-                    
-                    {/* Gambar Auto Crop (Square 1:1) */}
-                    <div style={{ width: '100%', aspectRatio: '1/1', background: '#222', marginBottom: '15px' }}>
-                        <img 
-                            src={item.tbl_pict || 'https://placehold.co/400x400/1e1e1e/FFF?text=No+Image'} 
-                            alt="News" 
-                            style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} 
-                        />
-                    </div>
+                        {/* Overlay Gelap (Jika ada gambar) */}
+                        {item.tbl_pict && (
+                            <div style={{ 
+                                position:'absolute', top:0, left:0, width:'100%', height:'100%', 
+                                background:'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 60%)' 
+                            }}></div>
+                        )}
 
-                    {/* Judul & Waktu */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap:'10px' }}>
-                        <h4 style={{ fontSize: '14px', fontWeight: '700', lineHeight:'1.4', color:'#111', flex: 1 }}>
-                            {item.tbl_title}
-                        </h4>
-                        <span style={{ fontSize: '10px', color: '#666', whiteSpace:'nowrap', marginTop:'3px' }}>
-                            {getTimeLabel(item.tgl_upload)}
-                        </span>
-                    </div>
+                        {/* CONTENT */}
+                        <div style={{ position:'relative', zIndex:2, height:'100%', display:'flex', flexDirection:'column', justifyContent:'space-between' }}>
+                            
+                            {/* Kategori */}
+                            <div style={{ textAlign: 'center', fontSize: '12px', opacity: 0.8, textTransform:'uppercase', letterSpacing:'1px' }}>
+                                {item.category || 'News'}
+                            </div>
+
+                            {/* Judul */}
+                            <h2 style={{ 
+                                fontSize: '24px', fontWeight: '800', textAlign: 'center', lineHeight: '1.3',
+                                margin: '0', // Reset margin
+                                textShadow: item.tbl_pict ? '0 2px 4px rgba(0,0,0,0.5)' : 'none'
+                            }}>
+                                {item.tbl_title}
+                            </h2>
+
+                            {/* Footer (Tanggal & Index) */}
+                            <div style={{ 
+                                display: 'flex', justifyContent: 'space-between', fontSize: '12px', opacity: 0.7, 
+                                borderTop: (item.tbl_pict || item.is_pinned) ? '1px solid rgba(255,255,255,0.3)' : '1px solid #eee', 
+                                paddingTop: '15px' 
+                            }}>
+                                <span>{new Date(item.tgl_upload).toLocaleDateString('id-ID')}</span>
+                                <span>{(index + 1).toString().padStart(2, '0')}</span>
+                            </div>
+                        </div>
 
                     </div>
                 </Link>
             ))}
+
             </div>
         )}
 
