@@ -7,7 +7,7 @@ export default function AdminTemplate({ children }) {
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ ease: 'easeOut', duration: 0.4 }}
-      style={{ padding: '50px 60px' }} // Padding standar untuk semua halaman admin
+      style={{ padding: '50px 60px' }}
     >
       {children}
     </motion.div>

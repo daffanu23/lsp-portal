@@ -9,15 +9,20 @@ export default function AddEventPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  // State Form Lengkap Sesuai DB
+  // State Form Lengkap Sesuai Kolom Database
   const [form, setForm] = useState({
     code_event: '',
     nama_event: '',
-    deksripsi: '', // Ikuti typo di database
+    deksripsi: '', // Typo sesuai DB
     alamat: '',
     tuk: '',
     tanggal_mulai: '',
-    tanggal_selesai: ''
+    tanggal_selesai: '',
+    jam_mulai: '',    // Baru
+    jam_selesai: '',  // Baru
+    kuota: '',        // Baru
+    harga: '',        // Baru
+    persyaratan: ''   // Baru
   });
 
   useEffect(() => {
@@ -37,7 +42,13 @@ export default function AddEventPage() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.from('tbl_m_event').insert([form]); // Insert object form langsung
+      // Logic: Saat buat event baru, sisa_kuota = kuota awal
+      const payload = {
+        ...form,
+        sisa_kuota: form.kuota 
+      };
+
+      const { error } = await supabase.from('tbl_m_event').insert([payload]);
 
       if (error) throw error;
       alert("Event berhasil ditambahkan.");
@@ -49,6 +60,10 @@ export default function AddEventPage() {
     }
   };
 
+  // Style helper biar rapi
+  const inputStyle = { width:'100%', padding:'10px', borderRadius:'6px', border:'1px solid #ccc' };
+  const labelStyle = { display:'block', marginBottom:'5px', fontWeight:'500', fontSize:'14px' };
+
   return (
     <div className="admin-layout">
       <aside className="admin-sidebar">
@@ -57,59 +72,91 @@ export default function AddEventPage() {
       </aside>
 
       <main className="admin-content">
-        <div className="container" style={{ maxWidth: '700px', margin: '0' }}>
+        <div className="container" style={{ maxWidth: '800px', margin: '0 auto' }}>
             <div className="section-header"><h2>Tambah Event Baru</h2></div>
+            
             <div className="card">
-            <div className="card-body">
+              <div className="card-body">
                 <form onSubmit={handleSubmit}>
                     
-                    {/* Baris 1: Kode & Nama */}
+                    {/* BAGIAN 1: INFORMASI DASAR */}
+                    <h4 style={{ marginBottom:'15px', color:'#2c3e50', borderBottom:'1px solid #eee', paddingBottom:'5px' }}>Informasi Dasar</h4>
                     <div style={{ display:'grid', gridTemplateColumns:'1fr 2fr', gap:'20px', marginBottom:'15px' }}>
                         <div className="form-group">
-                            <label>Kode Event</label>
-                            <input name="code_event" type="text" onChange={handleChange} placeholder="WEB-001" required style={{ width:'100%', padding:'10px', borderRadius:'6px' }} />
+                            <label style={labelStyle}>Kode Event</label>
+                            <input name="code_event" type="text" onChange={handleChange} placeholder="WEB-001" required style={inputStyle} />
                         </div>
                         <div className="form-group">
-                            <label>Nama Event</label>
-                            <input name="nama_event" type="text" onChange={handleChange} placeholder="Sertifikasi Web Developer" required style={{ width:'100%', padding:'10px', borderRadius:'6px' }} />
+                            <label style={labelStyle}>Nama Event</label>
+                            <input name="nama_event" type="text" onChange={handleChange} placeholder="Sertifikasi Web Developer" required style={inputStyle} />
                         </div>
                     </div>
 
-                    {/* Deskripsi */}
                     <div className="form-group" style={{ marginBottom: '15px' }}>
-                        <label>Deskripsi Singkat</label>
-                        <textarea name="deksripsi" rows="3" onChange={handleChange} placeholder="Keterangan event..." style={{ width:'100%', padding:'10px', borderRadius:'6px' }}></textarea>
+                        <label style={labelStyle}>Deskripsi Singkat</label>
+                        <textarea name="deksripsi" rows="3" onChange={handleChange} placeholder="Jelaskan detail event..." style={inputStyle}></textarea>
                     </div>
 
-                    {/* Baris 2: Lokasi & TUK */}
+                    {/* BAGIAN 2: LOKASI & WAKTU */}
+                    <h4 style={{ marginBottom:'15px', marginTop:'25px', color:'#2c3e50', borderBottom:'1px solid #eee', paddingBottom:'5px' }}>Waktu & Tempat</h4>
                     <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px', marginBottom:'15px' }}>
                         <div className="form-group">
-                            <label>Kota / Lokasi</label>
-                            <input name="alamat" type="text" onChange={handleChange} placeholder="Jakarta" required style={{ width:'100%', padding:'10px', borderRadius:'6px' }} />
+                            <label style={labelStyle}>Kota / Lokasi</label>
+                            <input name="alamat" type="text" onChange={handleChange} placeholder="Jakarta" required style={inputStyle} />
                         </div>
                         <div className="form-group">
-                            <label>TUK (Tempat Uji)</label>
-                            <input name="tuk" type="text" onChange={handleChange} placeholder="Univ Indonesia" required style={{ width:'100%', padding:'10px', borderRadius:'6px' }} />
+                            <label style={labelStyle}>TUK (Tempat Uji)</label>
+                            <input name="tuk" type="text" onChange={handleChange} placeholder="Gedung Serbaguna Lt. 2" required style={inputStyle} />
                         </div>
                     </div>
 
-                    {/* Baris 3: Tanggal */}
-                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px', marginBottom:'25px' }}>
-                        <div className="form-group">
-                            <label>Tanggal Mulai</label>
-                            <input name="tanggal_mulai" type="date" onChange={handleChange} required style={{ width:'100%', padding:'10px', borderRadius:'6px' }} />
+                    {/* Grid untuk Tanggal & Jam */}
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px', marginBottom:'15px' }}>
+                        <div>
+                            <label style={labelStyle}>Tanggal Mulai</label>
+                            <input name="tanggal_mulai" type="date" onChange={handleChange} required style={inputStyle} />
                         </div>
-                        <div className="form-group">
-                            <label>Tanggal Selesai</label>
-                            <input name="tanggal_selesai" type="date" onChange={handleChange} required style={{ width:'100%', padding:'10px', borderRadius:'6px' }} />
+                        <div>
+                            <label style={labelStyle}>Tanggal Selesai</label>
+                            <input name="tanggal_selesai" type="date" onChange={handleChange} required style={inputStyle} />
                         </div>
                     </div>
 
-                    <button type="submit" className="btn-fill" disabled={loading} style={{ width:'100%', padding:'12px', fontSize:'14px' }}>
-                        {loading ? 'Menyimpan...' : 'Simpan Event'}
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px', marginBottom:'15px' }}>
+                        <div>
+                            <label style={labelStyle}>Jam Mulai</label>
+                            <input name="jam_mulai" type="time" onChange={handleChange} required style={inputStyle} />
+                        </div>
+                        <div>
+                            <label style={labelStyle}>Jam Selesai</label>
+                            <input name="jam_selesai" type="time" onChange={handleChange} required style={inputStyle} />
+                        </div>
+                    </div>
+
+                    {/* BAGIAN 3: DETAIL PENDAFTARAN */}
+                    <h4 style={{ marginBottom:'15px', marginTop:'25px', color:'#2c3e50', borderBottom:'1px solid #eee', paddingBottom:'5px' }}>Detail Pendaftaran</h4>
+                    
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px', marginBottom:'15px' }}>
+                        <div className="form-group">
+                            <label style={labelStyle}>Kuota Peserta</label>
+                            <input name="kuota" type="number" min="1" onChange={handleChange} placeholder="Contoh: 100" required style={inputStyle} />
+                        </div>
+                        <div className="form-group">
+                            <label style={labelStyle}>Harga (Rp)</label>
+                            <input name="harga" type="number" min="0" onChange={handleChange} placeholder="0 jika gratis" required style={inputStyle} />
+                        </div>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: '25px' }}>
+                        <label style={labelStyle}>Persyaratan (Pisahkan dengan Enter/Baris baru)</label>
+                        <textarea name="persyaratan" rows="5" onChange={handleChange} placeholder="- KTP&#10;- Ijazah&#10;- Pas Foto" style={inputStyle}></textarea>
+                    </div>
+
+                    <button type="submit" className="btn-fill" disabled={loading} style={{ width:'100%', padding:'15px', fontSize:'16px', fontWeight:'bold', background:'black', color:'white', border:'none', borderRadius:'8px', cursor:'pointer' }}>
+                        {loading ? 'Menyimpan Data...' : 'Simpan Event Baru'}
                     </button>
                 </form>
-            </div>
+              </div>
             </div>
         </div>
       </main>

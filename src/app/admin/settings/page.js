@@ -145,17 +145,17 @@ export default function AdminSettingsPage() {
                 
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px' }}>
                     <div style={formGroup}>
-                        <label style={labelStyle}>Teks Overlay (Di atas gambar)</label>
+                        <label style={labelStyle}>Nama anda</label>
                         <input type="text" name="about_name_overlay" value={formData.about_name_overlay} onChange={handleChange} style={inputStyle} placeholder="Contoh: TENTANG KAMI" />
                     </div>
                     <div style={formGroup}>
-                        <label style={labelStyle}>Judul Artikel</label>
+                        <label style={labelStyle}>Jabatan</label>
                         <input type="text" name="about_title" value={formData.about_title} onChange={handleChange} style={inputStyle} placeholder="Judul Halaman About" />
                     </div>
                 </div>
 
                 <div style={{ marginBottom:0 }}>
-                    <label style={labelStyle}>Isi Artikel</label>
+                    <label style={labelStyle}>Field text</label>
                     <textarea name="about_description" value={formData.about_description} onChange={handleChange} style={{...inputStyle, height:'150px', lineHeight:'1.6'}} placeholder="Tulis deskripsi lengkap..." />
                 </div>
             </div>

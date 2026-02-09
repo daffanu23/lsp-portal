@@ -20,10 +20,6 @@ export default function AboutPage() {
 
   return (
     <>
-      {/* TIDAK PERLU wrapper background atau container lagi di sini. 
-          Semuanya sudah diurus oleh layout.js */}
-
-      {/* IMAGE CARD */}
       <div style={{ position: 'relative', borderRadius: '20px', overflow: 'hidden', marginBottom: '40px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
           {data.about_image ? (
             <img src={data.about_image} alt="About" style={{ width: '100%', height: 'auto', display: 'block' }} />
@@ -38,7 +34,6 @@ export default function AboutPage() {
           </div>
       </div>
 
-      {/* Content Text */}
       <div style={{ textAlign:'left' }}>
           <h2 style={{ fontSize:'24px', fontWeight:'800', marginBottom:'20px', color:'#111' }}>
             {data.about_title || 'Memuat Data...'}

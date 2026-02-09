@@ -7,7 +7,6 @@ export default function TestimonialList() {
 
   useEffect(() => {
     async function fetchTesti() {
-      // Mengambil data dari tbl_m_testimoni (Pastikan nama tabel benar di kode Supabase Anda, di SQL namanya tbl_m_testimoni)
       const { data, error } = await supabase
         .from('tbl_m_testimoni') 
         .select('*')
@@ -32,16 +31,12 @@ export default function TestimonialList() {
                 background: '#1f1f1f', padding: '40px', color: 'white', 
                 minHeight: '320px', display:'flex', flexDirection:'column', justifyContent:'space-between' 
             }}>
-               
-               {/* Isi Testimoni */}
                <h3 style={{ fontSize: '20px', fontWeight: '700', lineHeight: '1.4', marginBottom:'20px' }}>
                   "{item.isi_testimoni}"
                </h3>
 
-               {/* Info User */}
                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #444', paddingTop: '20px' }}>
                   <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
-                      {/* Foto User (Jika kosong pakai icon User (1).svg) */}
                       <img 
                         src={item.testimoni_pict || '/User (1).svg'} 
                         alt={item.nama} 
@@ -51,12 +46,10 @@ export default function TestimonialList() {
                       <span style={{ fontSize:'12px', fontWeight:'600', textTransform:'uppercase' }}>{item.nama}</span>
                   </div>
                   
-                  {/* Tempat Kerja (Sesuai Request) */}
                   <span style={{ fontSize:'10px', color:'#888' }}>
                       {item.tmpt_kerja}
                   </span>
                </div>
-
             </div>
           ))}
         </div>

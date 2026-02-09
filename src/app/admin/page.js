@@ -20,7 +20,6 @@ export default function AdminDashboard() {
       .order('tgl_upload', { ascending: false });
 
     if (data) {
-        // Sorting: Pinned di atas
         const sorted = data.sort((a, b) => (a.is_pinned === b.is_pinned ? 0 : a.is_pinned ? -1 : 1));
         setNewsList(sorted);
     }
@@ -41,10 +40,7 @@ export default function AdminDashboard() {
   if (loading) return <div style={{ height:'80vh', display:'flex', justifyContent:'center', alignItems:'center', color:'#666' }}><Loader2 className="animate-spin"/> Memuat Data...</div>;
 
   return (
-    // WRAPPER UTAMA: Tambah Padding Top agar tidak ketutup Navbar/Header
     <div style={{ paddingTop: '80px', maxWidth: '1200px', margin: '0 auto' }}>
-        
-        {/* HEADER SECTION */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px' }}>
             <div>
                 <h1 style={{ fontSize: '42px', fontWeight: '900', margin: '0 0 10px 0', letterSpacing:'-1px', textTransform:'uppercase' }}>Dashboard</h1>
@@ -61,7 +57,6 @@ export default function AdminDashboard() {
             </Link>
         </div>
 
-        {/* CONTENT CARD (TABEL) */}
         <div style={{ background: 'white', borderRadius: '20px', boxShadow: '0 5px 30px rgba(0,0,0,0.05)', overflow: 'hidden', border:'1px solid #eee' }}>
             {newsList.length === 0 ? (
                 <div style={{ padding: '80px', textAlign: 'center', color: '#888' }}>
@@ -85,14 +80,12 @@ export default function AdminDashboard() {
                                 background: item.is_pinned ? '#fffbeb' : 'white',
                                 transition: '0.2s'
                             }}>
-                                {/* Kolom PIN */}
                                 <td style={{ textAlign: 'center', padding: '20px' }}>
                                     <button onClick={() => togglePin(item.id_news, item.is_pinned)} style={{ background: 'none', border: 'none', cursor: 'pointer', transition:'0.2s' }} title={item.is_pinned ? 'Lepas Pin' : 'Pin Berita'}>
                                         <Pin size={22} fill={item.is_pinned ? "#f59e0b" : "none"} color={item.is_pinned ? "#f59e0b" : "#ccc"} />
                                     </button>
                                 </td>
                                 
-                                {/* Kolom JUDUL */}
                                 <td style={{ padding: '20px' }}>
                                     <div style={{ fontWeight: '700', fontSize: '16px', color: '#222' }}>
                                         {item.tbl_title}
@@ -101,15 +94,12 @@ export default function AdminDashboard() {
                                     <div style={{ fontSize: '13px', color: '#888', marginTop: '5px', textTransform:'uppercase', letterSpacing:'0.5px' }}>{item.category || 'General'}</div>
                                 </td>
 
-                                {/* Kolom TANGGAL */}
                                 <td style={{ padding: '20px', color: '#666' }}>
                                     {new Date(item.tgl_upload).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' })}
                                 </td>
 
-                                {/* Kolom PENULIS */}
                                 <td style={{ padding: '20px', color: '#666', fontWeight:'500' }}>{item.author}</td>
 
-                                {/* Kolom AKSI */}
                                 <td style={{ textAlign: 'center', padding: '20px' }}>
                                     <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
                                         <Link href={`/admin/news/edit/${item.id_news}`}>

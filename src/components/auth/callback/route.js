@@ -9,8 +9,6 @@ export async function GET(request) {
 
   if (code) {
     const cookieStore = cookies()
-
-    // Buat client Supabase khusus server untuk menukar kode
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -28,16 +26,10 @@ export async function GET(request) {
         },
       }
     )
-
-    // Tukar "Code" dari Google menjadi "Session" di browser user
     const { error } = await supabase.auth.exchangeCodeForSession(code)
-    
     if (!error) {
-      // Jika berhasil, kirim user ke halaman tujuan (Home)
       return NextResponse.redirect(`${origin}${next}`)
     }
   }
-
-  // Jika gagal, kembalikan ke halaman error
   return NextResponse.redirect(`${origin}/auth/auth-code-error`)
 }

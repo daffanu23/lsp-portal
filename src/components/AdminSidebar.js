@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { 
   LayoutDashboard, Calendar, Settings, History, 
-  Mail, ShieldCheck, LogOut, Sun, Moon, User, Users // <--- Tambah 'User' di sini
+  Mail, ShieldCheck, LogOut, Sun, Moon, User, Users
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -16,7 +16,6 @@ export default function AdminSidebar() {
   const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
-    // Cek User & Theme saat load
     async function getUser() {
         const { data: { session } } = await supabase.auth.getSession();
         if(session) setUserEmail(session.user.email);
@@ -47,7 +46,6 @@ export default function AdminSidebar() {
     router.push('/login');
   };
 
-  // --- LOGIKA "KOTAK HITAM" ---
   const getLinkStyle = (path) => {
     const isActive = pathname === path; 
     return {
@@ -60,8 +58,6 @@ export default function AdminSidebar() {
       fontSize: '15px',
       fontWeight: isActive ? '700' : '500',
       transition: '0.3s',
-      // Jika Aktif: Background Hitam, Teks Putih
-      // Jika Tidak: Transparan, Teks Abu
       background: isActive ? 'black' : 'transparent',
       color: isActive ? 'white' : '#666',
       marginBottom: '8px' 
@@ -80,21 +76,14 @@ export default function AdminSidebar() {
         padding: '40px 30px',
         zIndex: 50
     }}>
-      
-      {/* 1. HEADER ADMIN */}
       <div style={{ marginBottom: '60px' }}>
          <h1 style={{ fontSize:'32px', fontWeight:'900', margin:0, letterSpacing:'-1px' }}>UNI</h1>
          <span style={{ fontSize:'12px', fontWeight:'bold', color:'#999', textTransform:'uppercase', letterSpacing:'2px' }}>Admin Panel</span>
       </div>
-
-      {/* 2. MENU LIST */}
       <nav style={{ flex: 1 }}>
-        {/* --- MENU PROFILE (BARU) --- */}
         <Link href="/profile" style={getLinkStyle('/profile')}>
             <User size={20} /> Profile Saya
         </Link>
-
-        {/* --- MENU UTAMA --- */}
         <Link href="/admin" style={getLinkStyle('/admin')}>
             <LayoutDashboard size={20} /> Dashboard Berita
         </Link>
@@ -118,7 +107,6 @@ export default function AdminSidebar() {
         </Link>
       </nav>
 
-      {/* 3. FOOTER (Theme & Logout) */}
       <div style={{ borderTop: '1px solid #eee', paddingTop: '30px' }}>
          <button onClick={toggleTheme} style={{ 
             width:'100%', padding:'12px', borderRadius:'8px', border:'1px solid #ddd', background:'transparent',
@@ -138,7 +126,6 @@ export default function AdminSidebar() {
              <LogOut size={18} /> Logout
          </button>
       </div>
-
     </div>
   );
 }

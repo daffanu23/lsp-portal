@@ -6,7 +6,6 @@ import Link from 'next/link';
 
 export default function NewsPage() {
   const [news, setNews] = useState([]);
-
   useEffect(() => {
     fetchNews();
   }, []);
@@ -22,13 +21,12 @@ export default function NewsPage() {
   return (
    <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', // KUNCI UTAMA DI SINI
+        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
         gap: '20px',
-        padding: '40px', // Padding luar grid
-        maxWidth: '1400px', // Membatasi lebar maksimal agar rapi
-        margin: '0 auto' // Posisi tengah
+        padding: '40px',
+        maxWidth: '1400px',
+        margin: '0 auto'
     }}>
-        
         {news.map((item, index) => (
             <Link 
                 href={`/news/${item.id_news}`} 
@@ -54,7 +52,6 @@ export default function NewsPage() {
                 onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
                 onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                 >
-                    {/* Overlay Gelap */}
                     {item.tbl_pict && (
                         <div style={{ 
                             position:'absolute', top:0, left:0, width:'100%', height:'100%', 
@@ -62,15 +59,11 @@ export default function NewsPage() {
                         }}></div>
                     )}
 
-                    {/* CONTENT */}
                     <div style={{ position:'relative', zIndex:2, height:'100%', display:'flex', flexDirection:'column', justifyContent:'space-between' }}>
-                        
-                        {/* Kategori */}
                         <div style={{ textAlign: 'center', fontSize: '12px', opacity: 0.8, textTransform:'uppercase', letterSpacing:'1px' }}>
                             {item.category || 'News'}
                         </div>
 
-                        {/* Judul */}
                         <h2 style={{ 
                             fontSize: '24px', fontWeight: '800', textAlign: 'center', lineHeight: '1.3',
                             textShadow: item.tbl_pict ? '0 2px 4px rgba(0,0,0,0.5)' : 'none'
@@ -78,7 +71,6 @@ export default function NewsPage() {
                             {item.tbl_title}
                         </h2>
 
-                        {/* Footer */}
                         <div style={{ 
                             display: 'flex', justifyContent: 'space-between', fontSize: '12px', opacity: 0.7, 
                             borderTop: (item.tbl_pict || item.is_pinned) ? '1px solid rgba(255,255,255,0.3)' : '1px solid #eee', 

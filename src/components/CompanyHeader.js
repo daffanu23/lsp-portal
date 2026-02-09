@@ -4,10 +4,7 @@ import { usePathname } from 'next/navigation';
 
 export default function CompanyHeader() {
   const pathname = usePathname();
-
-  // Helper function untuk style aktif
   const getLinkStyle = (path) => {
-    // Cek apakah path sekarang diawali dengan link tersebut (agar /news/123 tetap aktif di News)
     const isActive = pathname.startsWith(path);
     return {
       textDecoration: 'none',

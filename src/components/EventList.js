@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import Link from 'next/link';
 
-// --- 1. KOMPONEN KARTU INTERAKTIF (Dipisah) ---
 function HomeEventCard({ item, isComingSoon }) {
   const [isCardHovered, setIsCardHovered] = useState(false);
   const [isBtnHovered, setIsBtnHovered] = useState(false);
@@ -14,7 +13,6 @@ function HomeEventCard({ item, isComingSoon }) {
       style={{ textDecoration: 'none' }}
     >
       <div 
-        // Event Handler KARTU
         onMouseEnter={() => setIsCardHovered(true)}
         onMouseLeave={() => setIsCardHovered(false)}
         style={{ 
@@ -27,8 +25,6 @@ function HomeEventCard({ item, isComingSoon }) {
             display:'flex', 
             flexDirection:'column', 
             justifyContent:'space-between',
-            
-            // --- ANIMASI INTERAKTIF ---
             border: isCardHovered ? '1px solid #555' : '1px solid #333', 
             transform: isCardHovered ? 'translateY(-10px)' : 'translateY(0)', // Naik
             boxShadow: isCardHovered ? '0 20px 40px rgba(0,0,0,0.4)' : '0 10px 20px rgba(0,0,0,0.1)', // Bayangan
@@ -36,8 +32,7 @@ function HomeEventCard({ item, isComingSoon }) {
             cursor: 'pointer'
         }}
       >
-        
-        {/* BADGE "Coming Soon" */}
+
         {isComingSoon(item.tanggal_mulai) && (
             <div style={{ 
                 position:'absolute', top:'0', left:'50%', transform:'translateX(-50%)',
@@ -52,10 +47,7 @@ function HomeEventCard({ item, isComingSoon }) {
             </div>
         )}
 
-        {/* AREA KONTEN ATAS */}
         <div style={{ marginTop: '30px' }}>
-            
-            {/* Kode Event */}
             <p style={{ 
                 fontSize: '12px', 
                 color: isCardHovered ? 'white' : '#aaa', // Jadi putih saat hover
@@ -64,13 +56,9 @@ function HomeEventCard({ item, isComingSoon }) {
             }}>
                 {item.code_event || '0101'}
             </p>
-            
-            {/* Judul Event */}
             <h3 style={{ fontSize: '22px', fontWeight: '700', lineHeight: '1.2', marginBottom: '25px' }}>
                 {item.nama_event}
             </h3>
-            
-            {/* Lokasi & Tanggal */}
             <div style={{ marginBottom:'10px' }}>
                 <p style={{ fontSize: '15px', fontWeight:'600', margin:0 }}>
                     {item.alamat}
@@ -81,25 +69,17 @@ function HomeEventCard({ item, isComingSoon }) {
             </div>
         </div>
 
-        {/* AREA BAWAH (Garis & Tombol) */}
         <div style={{ marginTop: 'auto' }}> 
-            
-            {/* Garis Horizontal */}
             <div style={{ 
                 height:'1px', background:'white', width:'100%', marginBottom:'20px', 
                 opacity: isCardHovered ? 0.5 : 0.3, transition: 'opacity 0.3s' 
             }}></div>
 
-            {/* Tombol Action Container */}
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                
-                {/* Visual Tombol (Interaktif) */}
                 <div 
-                    // Event Handler TOMBOL
                     onMouseEnter={() => setIsBtnHovered(true)}
                     onMouseLeave={() => setIsBtnHovered(false)}
                     style={{ 
-                        // Style berubah saat tombol dihover
                         background: isBtnHovered ? 'transparent' : 'white',           
                         color: isBtnHovered ? 'white' : 'black',
                         border: isBtnHovered ? '2px solid white' : '2px solid white', 
@@ -117,23 +97,19 @@ function HomeEventCard({ item, isComingSoon }) {
                 >
                     Lihat Detail
                 </div>
-
             </div>
         </div>
-
       </div>
     </Link>
   );
 }
 
-// --- 2. KOMPONEN UTAMA (EventList) ---
 export default function EventList() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchEvents() {
-      // Ambil 4 event terdekat (Sesuai kode asli Anda)
       const { data } = await supabase
         .from('tbl_m_event')
         .select('*')
@@ -146,7 +122,6 @@ export default function EventList() {
     fetchEvents();
   }, []);
 
-  // Logika Badge
   const isComingSoon = (dateStr) => {
     return new Date(dateStr) > new Date();
   };
@@ -154,8 +129,6 @@ export default function EventList() {
   return (
     <section style={{ padding: '80px 0', background: '#f5f5f5' }}>
       <div className="container">
-        
-        {/* JUDUL SECTION */}
         <h2 style={{ 
             textAlign: 'center', marginBottom: '50px', 
             fontWeight: '800', fontSize: '1.8rem', color:'#111', 
@@ -165,8 +138,6 @@ export default function EventList() {
         </h2>
 
         {loading ? <p style={{textAlign:'center'}}>Memuat jadwal...</p> : (
-            
-            // GRID SYSTEM
             <div style={{ 
                 display: 'grid', 
                 gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', 
@@ -174,14 +145,12 @@ export default function EventList() {
             }}>
             
             {events.map((item) => (
-                // Panggil Komponen Kartu di sini
                 <HomeEventCard 
                     key={item.id_event} 
                     item={item} 
                     isComingSoon={isComingSoon} 
                 />
             ))}
-
             </div>
         )}
       </div>

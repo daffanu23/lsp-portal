@@ -8,43 +8,29 @@ import { usePathname } from 'next/navigation';
 export default function Navbar() {
   const { user, role, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  
-  // 1. STATE & LOGIKA SCROLL
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
-  
-  // Cek apakah sedang di Homepage ('/')
   const isHomepage = pathname === '/';
 
-  // 2. DETEKSI SCROLL
   useEffect(() => {
     const handleScroll = () => {
-      // Jika scroll lebih dari 50px, ubah state jadi true
       setIsScrolled(window.scrollY > 50);
     };
-
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // 3. LOGIKA "GHOST" (Hilang di halaman Admin)
   if (pathname?.startsWith('/admin')) return null;
-
-  // 4. LOGIKA WARNA DINAMIS
-  // Transparan HANYA JIKA: di Homepage DAN belum di-scroll
   const isTransparent = isHomepage && !isScrolled;
-
   const navBg = isTransparent ? 'transparent' : 'rgba(255, 255, 255, 0.95)';
   const navTextColor = isTransparent ? 'white' : 'black';
   const navShadow = isTransparent ? 'none' : '0 4px 20px rgba(0,0,0,0.05)';
-  const navBackdrop = isTransparent ? 'none' : 'blur(10px)'; // Efek kaca
-
-  // Helper untuk Menu Overlay (Tetap Hitam/Putih biasa karena backgroundnya putih)
+  const navBackdrop = isTransparent ? 'none' : 'blur(10px)'; 
   const getLinkStyle = (path) => {
     const isActive = pathname === path;
     return {
       textDecoration: 'none',
-      color: 'black', // Di dalam overlay menu selalu hitam
+      color: 'black', 
       fontWeight: isActive ? '900' : 'normal',
       borderBottom: isActive ? '2px solid black' : 'none',
       paddingBottom: '2px',
@@ -67,14 +53,12 @@ export default function Navbar() {
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
-          transition: 'all 0.3s ease' // Animasi transisi warna halus
+          transition: 'all 0.3s ease'
       }}>
-        
-        {/* LOGO */}
         <Link href="/" style={{ 
             fontSize: '32px', 
             fontWeight: '900', 
-            color: navTextColor, // Warna logo ikut berubah
+            color: navTextColor,
             textDecoration: 'none', 
             letterSpacing: '-1px' 
         }}>
@@ -82,8 +66,6 @@ export default function Navbar() {
         </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          
-          {/* USER INFO */}
           {!user ? (
             <Link href="/login" style={{ fontSize: '14px', fontWeight: 'bold', textDecoration: 'none', color: navTextColor }}>
                 Login
@@ -100,8 +82,6 @@ export default function Navbar() {
                         Dashboard
                     </Link>
                 )}
-                
-                {/* Tombol Logout */}
                 <button 
                     onClick={logout} 
                     style={{ background:'none', border:'none', cursor:'pointer', color: isTransparent ? 'white' : 'red' }} 
@@ -111,15 +91,12 @@ export default function Navbar() {
                 </button>
             </div>
           )}
-
-          {/* HAMBURGER ICON */}
           <button onClick={() => setIsOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
             <Menu size={32} color={navTextColor} strokeWidth={1.5} />
           </button>
         </div>
       </nav>
 
-      {/* FULLSCREEN MENU OVERLAY (TIDAK PERLU DIUBAH WARNANYA) */}
       <div style={{ 
           position: 'fixed', top: 0, right: isOpen ? 0 : '-100%', width: '100%', height: '100vh', 
           background: 'white', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '40px',

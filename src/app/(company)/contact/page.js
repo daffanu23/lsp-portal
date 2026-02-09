@@ -34,11 +34,9 @@ export default function ContactPage() {
 
   return (
     <>
-       {/* 1. SECTION ALAMAT */}
-       {/* Langsung grid layout, tidak perlu header UNI lagi */}
        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(300px, 1fr))', gap:'50px', textAlign:'left', marginBottom:'80px' }}>
             <div>
-                <h3 style={{ fontSize:'18px', fontWeight:'bold', marginBottom:'10px' }}>LSP Pusat</h3>
+                <h3 style={{ fontSize:'18px', fontWeight:'bold', marginBottom:'10px' }}>Lokasi 1</h3>
                 <p style={{ fontSize:'14px', color:'#666', marginBottom:'20px', lineHeight:'1.6' }}>
                     {info.contact_address_1 || 'Loading address...'}
                 </p>
@@ -47,7 +45,7 @@ export default function ContactPage() {
                 </p>
             </div>
             <div>
-                <h3 style={{ fontSize:'18px', fontWeight:'bold', marginBottom:'10px' }}>Kampus STTI</h3>
+                <h3 style={{ fontSize:'18px', fontWeight:'bold', marginBottom:'10px' }}>Lokasi 2</h3>
                 <p style={{ fontSize:'14px', color:'#666', marginBottom:'20px', lineHeight:'1.6' }}>
                     {info.contact_address_2 || 'Loading address...'}
                 </p>
@@ -57,14 +55,18 @@ export default function ContactPage() {
             </div>
         </div>
 
-        {/* 2. SECTION PETA (BLACK BOX) */}
-        <div style={{ background:'#1e1e1e', color:'white', padding:'80px 20px', textAlign:'center', marginBottom:'80px', borderRadius:'12px' }}>
-            <h2 style={{ fontSize:'24px', fontWeight:'bold' }}>The map that leads to you</h2>
-            <p style={{ fontSize:'14px', opacity:0.6, marginTop:'10px' }}>(Map Placeholder)</p>
+        <div style={{ width:'100%', height:'450px', marginBottom:'80px', borderRadius:'12px', overflow:'hidden', boxShadow:'0 5px 20px rgba(0,0,0,0.05)' }}>
+            <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d25028.227435443245!2d112.61196478328479!3d-7.960694095278894!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e78829b5b4269c3%3A0x11dc7198d46d6e2!2sHardcore%20Internet%20Lounge!5e0!3m2!1sid!2sid!4v1770617852726!5m2!1sid!2sid" 
+                width="100%" 
+                height="100%" 
+                style={{ border:0 }} 
+                allowFullScreen="" 
+                loading="lazy" 
+                referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
         </div>
 
-        {/* 3. SECTION FORM */}
-        {/* Kita batasi lebarnya 700px agar rapi di tengah */}
         <div style={{ maxWidth:'700px', margin:'0 auto' }}>
             <h2 style={{ textAlign:'center', fontSize:'32px', fontWeight:'900', marginBottom:'10px', textTransform:'uppercase' }}>LET'S CONNECT</h2>
             <p style={{ textAlign:'center', color:'#666', marginBottom:'40px' }}>Anda bisa mengirim pesan melalui email</p>
