@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 export default function AddNewsPage() {
   const router = useRouter();
@@ -35,7 +34,6 @@ export default function AddNewsPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // PERUBAHAN 1: Hapus "!file" dari pengecekan agar gambar tidak wajib
     if (!title || !content) {
       alert("Mohon lengkapi Judul dan Isi Berita.");
       return;
@@ -44,9 +42,8 @@ export default function AddNewsPage() {
     setLoading(true);
 
     try {
-      let finalImageUrl = null; // Default null jika tidak ada gambar
+      let finalImageUrl = null;
 
-      // PERUBAHAN 2: Bungkus logika upload dengan "if (file)"
       if (file) {
           const fileExt = file.name.split('.').pop();
           const fileName = `${Date.now()}.${fileExt}`;
@@ -67,13 +64,12 @@ export default function AddNewsPage() {
           finalImageUrl = urlData.publicUrl;
       }
 
-      // Insert DB
       const { error: insertError } = await supabase
         .from('tbl_m_news')
         .insert({
           tbl_title: title,
           tbl_text: content,
-          tbl_pict: finalImageUrl, // PERUBAHAN 3: Gunakan variabel ini (bisa url atau null)
+          tbl_pict: finalImageUrl,
           author: author,
           tgl_upload: new Date().toISOString()
         });
@@ -81,7 +77,7 @@ export default function AddNewsPage() {
       if (insertError) throw insertError;
 
       alert("Berita berhasil disimpan.");
-      router.push('/admin'); 
+      router.push('/admin/news'); // Redirect ke list berita
 
     } catch (error) {
       console.error("Error:", error);
@@ -92,96 +88,87 @@ export default function AddNewsPage() {
   };
 
   return (
-    <div className="admin-layout">
-      {/* SIDEBAR (Mini version for UX consistency) */}
-      <aside className="admin-sidebar">
-        <h3 style={{ marginBottom: '30px', paddingBottom: '10px', borderBottom: '1px solid #34495e', fontSize:'18px' }}>
-          Admin Panel
-        </h3>
-        <nav className="admin-menu">
-            <Link href="/admin">Kembali ke Dashboard</Link>
-        </nav>
-      </aside>
-
-      <main className="admin-content">
-        <div className="container" style={{ maxWidth: '800px', margin: '0' }}>
-            <div className="section-header">
-                <h2>Tambah Berita Baru</h2>
-            </div>
-
-            <div className="card">
-            <div className="card-body">
-                <form onSubmit={handleSubmit}>
-                
-                <div className="form-group" style={{ marginBottom: '20px' }}>
-                    <label>Judul Berita</label>
-                    <input 
-                    type="text" 
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Masukkan judul berita"
-                    style={{ width: '100%', padding: '12px', borderRadius: '8px' }}
-                    />
-                </div>
-
-                <div className="form-group" style={{ marginBottom: '20px' }}>
-                    <label>Penulis</label>
-                    <input 
-                    type="text" 
-                    value={author}
-                    readOnly
-                    style={{ width: '100%', padding: '12px', borderRadius: '8px', opacity: 0.7, cursor: 'not-allowed' }}
-                    />
-                </div>
-
-                <div className="form-group" style={{ marginBottom: '20px' }}>
-                    <label>Gambar Thumbnail (Opsional)</label>
-                    <input 
-                    type="file" 
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    style={{ width: '100%', padding: '10px', border: '1px solid var(--gray)', borderRadius: '8px' }}
-                    />
-                </div>
-
-                <div className="form-group" style={{ marginBottom: '30px' }}>
-                    <label>Isi Berita</label>
-                    <textarea 
-                    rows="10"
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="Tulis konten berita di sini..."
-                    style={{ 
-                        width: '100%', padding: '12px', borderRadius: '8px', 
-                        fontFamily: 'Poppins', lineHeight: '1.6' 
-                    }}
-                    ></textarea>
-                </div>
-
-                <div style={{ display:'flex', gap:'15px' }}>
-                    <button 
-                        type="button"
-                        onClick={() => router.push('/admin')}
-                        className="btn-outline"
-                        style={{ textAlign:'center' }}
-                    >
-                        Batal
-                    </button>
-                    <button 
-                        type="submit" 
-                        className="btn-fill" 
-                        disabled={loading}
-                        style={{ flex: 2, fontSize: '14px', fontWeight: '600' }}
-                    >
-                        {loading ? 'Menyimpan...' : 'Simpan Berita'}
-                    </button>
-                </div>
-
-                </form>
-            </div>
-            </div>
+    // Cukup wrapper container saja, layout admin akan membungkusnya otomatis
+    <div className="container" style={{ maxWidth: '800px', margin: '0 auto', paddingTop: '20px' }}>
+        
+        <div className="section-header">
+            <h2>Tambah Berita Baru</h2>
         </div>
-      </main>
+
+        <div className="card">
+        <div className="card-body">
+            <form onSubmit={handleSubmit}>
+            
+            <div className="form-group" style={{ marginBottom: '20px' }}>
+                <label style={{ fontWeight:'bold', marginBottom:'5px', display:'block' }}>Judul Berita</label>
+                <input 
+                type="text" 
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Masukkan judul berita"
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border:'1px solid #ddd' }}
+                />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '20px' }}>
+                <label style={{ fontWeight:'bold', marginBottom:'5px', display:'block' }}>Penulis</label>
+                <input 
+                type="text" 
+                value={author}
+                readOnly
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', opacity: 0.7, cursor: 'not-allowed', background:'#f9f9f9', border:'1px solid #ddd' }}
+                />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '20px' }}>
+                <label style={{ fontWeight:'bold', marginBottom:'5px', display:'block' }}>Gambar Thumbnail (Opsional)</label>
+                <input 
+                type="file" 
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', background:'white' }}
+                />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '30px' }}>
+                <label style={{ fontWeight:'bold', marginBottom:'5px', display:'block' }}>Isi Berita</label>
+                <textarea 
+                rows="10"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Tulis konten berita di sini..."
+                style={{ 
+                    width: '100%', padding: '12px', borderRadius: '8px', border:'1px solid #ddd',
+                    fontFamily: 'inherit', lineHeight: '1.6' 
+                }}
+                ></textarea>
+            </div>
+
+            <div style={{ display:'flex', gap:'15px' }}>
+                <button 
+                    type="button"
+                    onClick={() => router.push('/admin')}
+                    className="btn-outline"
+                    style={{ textAlign:'center', padding:'12px 20px', borderRadius:'8px', border:'1px solid #ccc', background:'white', cursor:'pointer' }}
+                >
+                    Batal
+                </button>
+                <button 
+                    type="submit" 
+                    disabled={loading}
+                    style={{ 
+                        flex: 2, fontSize: '14px', fontWeight: 'bold', 
+                        background:'black', color:'white', padding:'12px', 
+                        border:'none', borderRadius:'8px', cursor:'pointer' 
+                    }}
+                >
+                    {loading ? 'Menyimpan...' : 'Simpan Berita'}
+                </button>
+            </div>
+
+            </form>
+        </div>
+        </div>
     </div>
   );
 }

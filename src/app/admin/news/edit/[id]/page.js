@@ -3,12 +3,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter, useParams } from 'next/navigation';
-import Link from 'next/link';
 
 export default function EditNewsPage() {
   const router = useRouter();
   const params = useParams();
-  const { id } = params; // Ambil ID dari URL
+  const { id } = params; 
 
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
@@ -17,20 +16,19 @@ export default function EditNewsPage() {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [content, setContent] = useState('');
-  const [oldImage, setOldImage] = useState(''); // Untuk preview gambar lama
-  const [file, setFile] = useState(null); // Jika user upload gambar baru
+  const [oldImage, setOldImage] = useState(''); 
+  const [file, setFile] = useState(null); 
+  const [previewImage, setPreviewImage] = useState(null); // State baru untuk preview real-time
 
-  // 1. Ambil Data Berita Lama saat Halaman Dibuka
+  // 1. Ambil Data Berita Lama
   useEffect(() => {
     async function getNewsData() {
-      // Cek Session dulu
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         router.push('/login');
         return;
       }
 
-      // Fetch Data Berita berdasarkan ID
       const { data, error } = await supabase
         .from('tbl_m_news')
         .select('*')
@@ -39,9 +37,8 @@ export default function EditNewsPage() {
 
       if (error) {
         alert("Gagal mengambil data berita.");
-        router.push('/admin');
+        router.push('/admin/news');
       } else {
-        // Isi Form dengan data lama
         setTitle(data.tbl_title);
         setAuthor(data.author);
         setContent(data.tbl_text);
@@ -55,7 +52,10 @@ export default function EditNewsPage() {
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
+      // Buat preview URL sementara untuk file baru
+      setPreviewImage(URL.createObjectURL(selectedFile));
     }
   };
 
@@ -67,7 +67,6 @@ export default function EditNewsPage() {
     try {
       let finalImageUrl = oldImage; // Default: pakai gambar lama
 
-      // A. Jika ada file baru, upload dulu
       if (file) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}_edit.${fileExt}`;
@@ -87,21 +86,19 @@ export default function EditNewsPage() {
         finalImageUrl = urlData.publicUrl;
       }
 
-      // B. Update Database
       const { error: updateError } = await supabase
         .from('tbl_m_news')
         .update({
           tbl_title: title,
           tbl_text: content,
           tbl_pict: finalImageUrl,
-          // author tidak kita update agar tetap original
         })
         .eq('id_news', id);
 
       if (updateError) throw updateError;
 
       alert("Berita berhasil diperbarui.");
-      router.push('/admin');
+      router.push('/admin/news'); // Redirect ke list berita
 
     } catch (error) {
       console.error(error);
@@ -111,106 +108,106 @@ export default function EditNewsPage() {
     }
   };
 
-  if (fetchLoading) return <p style={{ padding: '40px', textAlign: 'center' }}>Mengambil data berita...</p>;
+  if (fetchLoading) return <p style={{ padding: '40px', textAlign: 'center', color:'#666' }}>Mengambil data berita...</p>;
 
   return (
-    <div className="admin-layout">
-      {/* Sidebar Mini */}
-      <aside className="admin-sidebar">
-        <h3 style={{ marginBottom: '30px', paddingBottom: '10px', borderBottom: '1px solid #34495e', fontSize:'18px' }}>
-          Admin Panel
-        </h3>
-        <nav className="admin-menu">
-            <Link href="/admin">Kembali ke Dashboard</Link>
-        </nav>
-      </aside>
+    // Wrapper container simple
+    <div className="container" style={{ maxWidth: '800px', margin: '0 auto', paddingTop: '20px' }}>
+        
+        <div className="section-header">
+            <h2>Edit Berita</h2>
+        </div>
 
-      <main className="admin-content">
-        <div className="container" style={{ maxWidth: '800px', margin: '0' }}>
-            <div className="section-header">
-                <h2>Edit Berita</h2>
-            </div>
+        <div className="card">
+            <div className="card-body">
+            <form onSubmit={handleUpdate}>
+            
+                <div className="form-group" style={{ marginBottom: '20px' }}>
+                    <label style={{ fontWeight:'bold', marginBottom:'5px', display:'block' }}>Judul Berita</label>
+                    <input 
+                    type="text" 
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border:'1px solid #ddd' }}
+                    />
+                </div>
 
-            <div className="card">
-              <div className="card-body">
-                <form onSubmit={handleUpdate}>
-                
-                  {/* Judul */}
-                  <div className="form-group" style={{ marginBottom: '20px' }}>
-                      <label>Judul Berita</label>
-                      <input 
-                        type="text" 
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        style={{ width: '100%', padding: '12px', borderRadius: '8px' }}
-                      />
-                  </div>
+                <div className="form-group" style={{ marginBottom: '20px' }}>
+                    <label style={{ fontWeight:'bold', marginBottom:'5px', display:'block' }}>Penulis</label>
+                    <input 
+                    type="text" 
+                    value={author}
+                    readOnly
+                    style={{ width: '100%', padding: '12px', borderRadius: '8px', opacity: 0.7, cursor: 'not-allowed', background:'#f9f9f9', border:'1px solid #ddd' }}
+                    />
+                </div>
 
-                  {/* Penulis (Read Only) */}
-                  <div className="form-group" style={{ marginBottom: '20px' }}>
-                      <label>Penulis</label>
-                      <input 
-                        type="text" 
-                        value={author}
-                        readOnly
-                        style={{ width: '100%', padding: '12px', borderRadius: '8px', opacity: 0.7, cursor: 'not-allowed' }}
-                      />
-                  </div>
+                <div className="form-group" style={{ marginBottom: '20px' }}>
+                    <label style={{ fontWeight:'bold', marginBottom:'5px', display:'block' }}>Gambar Thumbnail</label>
+                    
+                    {/* Logika Preview Cerdas: Tampilkan Gambar Baru (jika ada) ATAU Gambar Lama */}
+                    {(previewImage || oldImage) && (
+                    <div style={{ marginBottom: '10px' }}>
+                        <img 
+                            src={previewImage || oldImage} 
+                            alt="Preview" 
+                            style={{ height: '150px', borderRadius: '8px', border: '1px solid #ddd', objectFit:'cover' }} 
+                        />
+                        <p style={{ fontSize: '12px', color: 'gray', marginTop:'5px' }}>
+                            {previewImage ? "Preview Gambar Baru" : "Gambar Saat Ini"}
+                        </p>
+                    </div>
+                    )}
 
-                  {/* Gambar */}
-                  <div className="form-group" style={{ marginBottom: '20px' }}>
-                      <label>Gambar Thumbnail</label>
-                      
-                      {/* Preview Gambar Lama */}
-                      {oldImage && !file && (
-                        <div style={{ marginBottom: '10px' }}>
-                          <img src={oldImage} alt="Preview" style={{ height: '100px', borderRadius: '8px', border: '1px solid #ddd' }} />
-                          <p style={{ fontSize: '12px', color: 'gray' }}>Gambar saat ini</p>
-                        </div>
-                      )}
+                    <input 
+                    type="file" 
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', background:'white' }}
+                    />
+                    <small style={{ color: 'gray', display:'block', marginTop:'5px' }}>
+                        Biarkan kosong jika tidak ingin mengubah gambar.
+                    </small>
+                </div>
 
-                      <input 
-                        type="file" 
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        style={{ width: '100%', padding: '10px', border: '1px solid var(--gray)', borderRadius: '8px' }}
-                      />
-                      <small style={{ color: 'gray' }}>Biarkan kosong jika tidak ingin mengubah gambar.</small>
-                  </div>
+                <div className="form-group" style={{ marginBottom: '30px' }}>
+                    <label style={{ fontWeight:'bold', marginBottom:'5px', display:'block' }}>Isi Berita</label>
+                    <textarea 
+                    rows="10"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    style={{ 
+                        width: '100%', padding: '12px', borderRadius: '8px', border:'1px solid #ddd',
+                        fontFamily: 'inherit', lineHeight: '1.6' 
+                    }}
+                    ></textarea>
+                </div>
 
-                  {/* Konten */}
-                  <div className="form-group" style={{ marginBottom: '30px' }}>
-                      <label>Isi Berita</label>
-                      <textarea 
-                        rows="10"
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
+                <div style={{ display:'flex', gap:'15px' }}>
+                    <button 
+                        type="button"
+                        onClick={() => router.push('/admin/')}
+                        className="btn-outline"
+                        style={{ textAlign:'center', padding: '12px 20px', borderRadius:'8px', border:'1px solid #ccc', background:'white', cursor:'pointer' }}
+                    >
+                        Batal
+                    </button>
+                    <button 
+                        type="submit" 
+                        disabled={loading}
                         style={{ 
-                            width: '100%', padding: '12px', borderRadius: '8px', 
-                            fontFamily: 'Poppins', lineHeight: '1.6' 
+                            flex: 2, fontSize: '14px', fontWeight: 'bold', 
+                            background:'black', color:'white', padding:'12px', 
+                            border:'none', borderRadius:'8px', cursor:'pointer' 
                         }}
-                      ></textarea>
-                  </div>
+                    >
+                        {loading ? 'Menyimpan Perubahan...' : 'Update Berita'}
+                    </button>
+                </div>
 
-                  <div style={{ display:'flex', gap:'15px' }}>
-                      <Link href="/admin" className="btn-outline" style={{ textAlign:'center', padding: '12px 20px', textDecoration:'none' }}>
-                          Batal
-                      </Link>
-                      <button 
-                          type="submit" 
-                          className="btn-fill" 
-                          disabled={loading}
-                          style={{ flex: 2, fontSize: '14px', fontWeight: '600' }}
-                      >
-                          {loading ? 'Menyimpan Perubahan...' : 'Update Berita'}
-                      </button>
-                  </div>
-
-                </form>
-              </div>
+            </form>
             </div>
         </div>
-      </main>
     </div>
   );
 }
