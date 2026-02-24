@@ -187,9 +187,7 @@ export default function EventDetailPage() {
 
                     <div style={{ marginTop:'30px' }}>
                         {event.sisa_kuota > 0 ? (
-                            <Link 
-                                href={`/register/${event.id_event}`} 
-                                style={{ 
+                            <Link href={`/event/${event.id_event}/register`} style={{ 
                                     display: 'flex', alignItems:'center', justifyContent:'center', gap:'10px',
                                     background: 'black', color: 'white', textDecoration: 'none', 
                                     padding: '15px', fontSize: '16px', fontWeight:'bold', borderRadius: '8px',
